@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Lavanderia-Cliente</string>
+    <string name="extra_peca_roupa">pecaRoupa</string>
+    <string name="status_esperando_coleta">esperando coleta</string>
 </resources>

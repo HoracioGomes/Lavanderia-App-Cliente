@@ -28,10 +28,11 @@ class FormularioSolicitacaoDeliveryActivity : AppCompatActivity() {
                 findViewById(R.id.activity_formulario_edittext_tipo_peca)
             val nomePeca: String = editTextTipoPeca.text.toString()
             val pecaParaDelivery =
-                PecaRoupa(nome = nomePeca, status = "esperando coleta")
-            dao.insere(pecaParaDelivery)
-            val voltaParaListaRoupas = Intent(this, ListaRoupasActivity::class.java)
-            startActivity(voltaParaListaRoupas)
+                PecaRoupa(nome = nomePeca, status = getString(R.string.status_esperando_coleta))
+            val voltaParaListaRoupas = Intent()
+            voltaParaListaRoupas.putExtra(getString(R.string.extra_peca_roupa), pecaParaDelivery)
+            setResult(ConstantesInt.CODIGO_RESULTADO_REQUISICAO_PECA_DELIVERY.valor, voltaParaListaRoupas)
+            finish()
 
         }
     }

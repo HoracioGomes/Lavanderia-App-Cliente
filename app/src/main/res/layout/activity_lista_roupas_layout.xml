@@ -6,26 +6,17 @@
     android:layout_height="match_parent"
     tools:context=".ui.activity.ListaRoupasActivity">
 
-<!--    <androidx.recyclerview.widget.RecyclerView-->
-<!--        android:id="@+id/activity_lista_roupas_recyclerview"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="0dp"-->
-<!--        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        tools:listitem="@layout/card_peca_roupa" />-->
-
-    <ListView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/activity_lista_roupas_recyclerview"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:listitem="@layout/card_peca_roupa_layout" />
+
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/activity_lista_roupas_fab_suportet"
