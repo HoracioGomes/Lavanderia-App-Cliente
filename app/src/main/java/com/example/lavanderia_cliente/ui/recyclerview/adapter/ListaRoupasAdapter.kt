@@ -20,12 +20,7 @@ class ListaRoupasAdapter(
     }
 
     override fun onBindViewHolder(holder: ListaRoupasViewHolder, position: Int) {
-        val peca: PecaRoupa = pecasRoupas[position]
-        val nomePecaRoupa = holder.itemView.findViewById<TextView>(R.id.card_peca_roupa_nome_peca)
-        val statusPecaRoupa =
-            holder.itemView.findViewById<TextView>(R.id.card_peca_roupa_status_roupa)
-        nomePecaRoupa.text = peca.nome
-        statusPecaRoupa.text = peca.status
+        holder.vincula(pecasRoupas[position])
     }
 
     override fun getItemCount(): Int {
@@ -38,6 +33,13 @@ class ListaRoupasAdapter(
     }
 
     class ListaRoupasViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val nomePecaRoupa = itemView.findViewById<TextView>(R.id.card_peca_roupa_nome_peca)
+        val statusPecaRoupa =
+            itemView.findViewById<TextView>(R.id.card_peca_roupa_status_roupa)
 
+        fun vincula(peca: PecaRoupa) {
+            nomePecaRoupa.text = peca.nome
+            statusPecaRoupa.text = peca.status
+        }
     }
 }
