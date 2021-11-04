@@ -3,10 +3,12 @@ package com.example.lavanderia_cliente.ui.activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.lavanderia_cliente.R
 import com.example.lavanderia_cliente.dao.PecaRoupaDao
 import com.example.lavanderia_cliente.model.PecaRoupa
+import com.example.lavanderia_cliente.ui.activity.callback.PecaRoupaItemTouchCallback
 import com.example.lavanderia_cliente.ui.recyclerview.adapter.ListaRoupasAdapter
 import com.example.lavanderia_cliente.ui.utils.Constantes.Companion.CODIGO_REQUISICAO_PECA_DELIVERY
 import com.example.lavanderia_cliente.ui.utils.Constantes.Companion.CODIGO_RESULTADO_REQUISICAO_PECA_DELIVERY
@@ -20,6 +22,7 @@ class ListaRoupasActivity : AppCompatActivity() {
     private val dao: PecaRoupaDao = PecaRoupaDao()
     private val listaRoupas: MutableList<PecaRoupa> = mutableListOf()
     private val POSICAO_INVALIDA = -1
+    lateinit var recyclerView: RecyclerView
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,11 +33,18 @@ class ListaRoupasActivity : AppCompatActivity() {
         verificaSeHouveEdicao()
     }
 
+
     private fun inicializaAdapter() {
-        val layoutLista: RecyclerView = findViewById(R.id.activity_lista_roupas_recyclerview)
+        recyclerView = findViewById(R.id.activity_lista_roupas_recyclerview)
         listaRoupas.addAll(dao.todas())
         adapter = ListaRoupasAdapter(this, listaRoupas)
-        layoutLista.adapter = adapter
+        recyclerView.adapter = adapter
+        configuraSwipe()
+    }
+
+    private fun configuraSwipe() {
+        var itemTouchHelper = ItemTouchHelper(PecaRoupaItemTouchCallback(this, adapter))
+        itemTouchHelper.attachToRecyclerView(recyclerView)
     }
 
 
