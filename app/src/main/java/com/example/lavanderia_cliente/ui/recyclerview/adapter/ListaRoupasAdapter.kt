@@ -1,6 +1,7 @@
 package com.example.lavanderia_cliente.ui.recyclerview.adapter
 
 import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,6 +9,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.lavanderia_cliente.R
 import com.example.lavanderia_cliente.model.PecaRoupa
+import com.example.lavanderia_cliente.ui.activity.FormularioSolicitacaoDeliveryActivity
+import com.example.lavanderia_cliente.ui.utils.Constantes.Companion.EXTRA_PECA_PARA_EDICAO
+import com.example.lavanderia_cliente.ui.utils.Constantes.Companion.EXTRA_POSICAO_PECA_PARA_EDICAO
 
 class ListaRoupasAdapter(
     private val context: Context,
@@ -20,12 +24,19 @@ class ListaRoupasAdapter(
     }
 
     override fun onBindViewHolder(holder: ListaRoupasViewHolder, position: Int) {
-        val peca: PecaRoupa = pecasRoupas[position]
-        val nomePecaRoupa = holder.itemView.findViewById<TextView>(R.id.card_peca_roupa_nome_peca)
-        val statusPecaRoupa =
-            holder.itemView.findViewById<TextView>(R.id.card_peca_roupa_status_roupa)
-        nomePecaRoupa.text = peca.nome
-        statusPecaRoupa.text = peca.status
+        holder.vincula(pecasRoupas[position])
+        holder.itemView.setOnClickListener {
+            var editaNota = Intent(context, FormularioSolicitacaoDeliveryActivity::class.java)
+            editaNota.putExtra(
+                EXTRA_PECA_PARA_EDICAO,
+                pecasRoupas[position]
+            )
+            editaNota.putExtra(
+                EXTRA_POSICAO_PECA_PARA_EDICAO,
+                holder.adapterPosition
+            )
+            context.startActivity(editaNota)
+        }
     }
 
     override fun getItemCount(): Int {
@@ -37,7 +48,19 @@ class ListaRoupasAdapter(
         notifyDataSetChanged()
     }
 
-    class ListaRoupasViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    fun alteraPecaRoupa(posicao: Int, pecaRoupa: PecaRoupa) {
+        pecasRoupas.set(posicao, pecaRoupa)
+        notifyDataSetChanged()
+    }
 
+    class ListaRoupasViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val nomePecaRoupa = itemView.findViewById<TextView>(R.id.card_peca_roupa_nome_peca)
+        val statusPecaRoupa =
+            itemView.findViewById<TextView>(R.id.card_peca_roupa_status_roupa)
+
+        fun vincula(peca: PecaRoupa) {
+            nomePecaRoupa.text = peca.nome
+            statusPecaRoupa.text = peca.status
+        }
     }
 }
