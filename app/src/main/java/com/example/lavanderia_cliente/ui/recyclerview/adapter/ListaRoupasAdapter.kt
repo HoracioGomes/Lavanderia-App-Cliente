@@ -53,6 +53,11 @@ class ListaRoupasAdapter(
         notifyDataSetChanged()
     }
 
+    fun remove(position: Int) {
+        pecasRoupas.removeAt(position)
+        notifyDataSetChanged()
+    }
+
     class ListaRoupasViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val nomePecaRoupa = itemView.findViewById<TextView>(R.id.card_peca_roupa_nome_peca)
         val statusPecaRoupa =
