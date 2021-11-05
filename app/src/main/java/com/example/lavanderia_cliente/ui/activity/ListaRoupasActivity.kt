@@ -28,6 +28,7 @@ class ListaRoupasActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_lista_roupas_layout)
+        setTitle(getString(R.string.titulo_bar_lista_roupas))
         inicializaAdapter()
         InicializaBotaoDelivery()
         verificaSeHouveEdicao()

@@ -24,6 +24,7 @@ class FormularioSolicitacaoDeliveryActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_formulario_solicitacao_delivery_layout)
+        setTitle(getString(R.string.titulo_bar_formulario_solic_edicao))
         inicializacaoBotoes()
         inicializacaoDao()
         inicializacaoEditTextTipoPeca()
