@@ -57,11 +57,13 @@ class ListaRoupasAdapter(
     fun remove(position: Int) {
         pecasRoupas.removeAt(position)
         notifyDataSetChanged()
+        notifyItemRemoved(position)
     }
 
     fun troca(posicaoInicial: Int, posicaoFinal: Int) {
         Collections.swap(pecasRoupas, posicaoInicial, posicaoFinal)
         notifyDataSetChanged()
+        notifyItemMoved(posicaoInicial, posicaoFinal)
     }
 
     class ListaRoupasViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
