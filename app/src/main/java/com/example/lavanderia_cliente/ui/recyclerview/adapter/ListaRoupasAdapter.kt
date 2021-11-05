@@ -12,6 +12,7 @@ import com.example.lavanderia_cliente.model.PecaRoupa
 import com.example.lavanderia_cliente.ui.activity.FormularioSolicitacaoDeliveryActivity
 import com.example.lavanderia_cliente.ui.utils.Constantes.Companion.EXTRA_PECA_PARA_EDICAO
 import com.example.lavanderia_cliente.ui.utils.Constantes.Companion.EXTRA_POSICAO_PECA_PARA_EDICAO
+import java.util.*
 
 class ListaRoupasAdapter(
     private val context: Context,
@@ -55,6 +56,11 @@ class ListaRoupasAdapter(
 
     fun remove(position: Int) {
         pecasRoupas.removeAt(position)
+        notifyDataSetChanged()
+    }
+
+    fun troca(posicaoInicial: Int, posicaoFinal: Int) {
+        Collections.swap(pecasRoupas, posicaoInicial, posicaoFinal)
         notifyDataSetChanged()
     }
 

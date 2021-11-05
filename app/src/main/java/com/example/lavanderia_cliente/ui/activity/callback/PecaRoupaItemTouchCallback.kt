@@ -14,9 +14,9 @@ class PecaRoupaItemTouchCallback(var context: Context, var adapter: ListaRoupasA
         recyclerView: RecyclerView,
         viewHolder: RecyclerView.ViewHolder
     ): Int {
-        val direcoesDeslize = LEFT or RIGHT
-        return makeMovementFlags(0, direcoesDeslize)
-
+        val direcoesDoacao = LEFT or RIGHT
+        val direcoesMoveCard = LEFT or RIGHT or UP or DOWN
+        return makeMovementFlags(direcoesMoveCard, direcoesDoacao)
     }
 
     override fun onMove(
@@ -24,7 +24,9 @@ class PecaRoupaItemTouchCallback(var context: Context, var adapter: ListaRoupasA
         viewHolder: RecyclerView.ViewHolder,
         target: RecyclerView.ViewHolder
     ): Boolean {
-        return false
+        PecaRoupaDao().troca(viewHolder.adapterPosition, target.adapterPosition)
+        adapter.troca(viewHolder.adapterPosition, target.adapterPosition)
+        return true
     }
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
