@@ -6,26 +6,17 @@
     android:layout_height="match_parent"
     tools:context=".ui.activity.ListaRoupasActivity">
 
-<!--    <androidx.recyclerview.widget.RecyclerView-->
-<!--        android:id="@+id/activity_lista_roupas_recyclerview"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="0dp"-->
-<!--        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        tools:listitem="@layout/card_peca_roupa" />-->
-
-    <ListView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/activity_lista_roupas_recyclerview"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:listitem="@layout/card_peca_roupa_layout" />
+
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/activity_lista_roupas_fab_suportet"
@@ -35,7 +26,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/activity_lista_roupas_fab_delivery"
         android:src="@drawable/ic_support"
-        android:backgroundTint="@android:color/holo_blue_light"
+        android:backgroundTint="@color/colorPrimaryVariant"
         />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -46,7 +37,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         android:src="@drawable/ic_delivery"
-        android:backgroundTint="#3FB332"
+        android:backgroundTint="@color/colorSecondaryVariant"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
