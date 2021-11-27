@@ -6,22 +6,18 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.lavanderia_cliente.R
-import com.example.lavanderia_cliente.dao.PecaRoupaDao
+import com.example.lavanderia_cliente.asynctasks.EditaPecaRoupaTask
+import com.example.lavanderia_cliente.database.LavanderiaDatabase
+import com.example.lavanderia_cliente.database.dao.PecaRoupaDao
 import com.example.lavanderia_cliente.model.PecaRoupa
 import com.example.lavanderia_cliente.ui.activity.callback.PecaRoupaItemTouchCallback
 import com.example.lavanderia_cliente.ui.recyclerview.adapter.ListaRoupasAdapter
-import com.example.lavanderia_cliente.ui.utils.Constantes.Companion.CODIGO_REQUISICAO_PECA_DELIVERY
-import com.example.lavanderia_cliente.ui.utils.Constantes.Companion.CODIGO_RESULTADO_REQUISICAO_PECA_DELIVERY
 import com.example.lavanderia_cliente.ui.utils.Constantes.Companion.EXTRA_PECA_PARA_EDICAO
-import com.example.lavanderia_cliente.ui.utils.Constantes.Companion.EXTRA_PECA_ROUPA
-import com.example.lavanderia_cliente.ui.utils.Constantes.Companion.EXTRA_POSICAO_PECA_PARA_EDICAO
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class ListaRoupasActivity : AppCompatActivity() {
     private lateinit var adapter: ListaRoupasAdapter
-    private val dao: PecaRoupaDao = PecaRoupaDao()
-    private val listaRoupas: MutableList<PecaRoupa> = mutableListOf()
-    private val POSICAO_INVALIDA = -1
+    private lateinit var pecaRoupaDao: PecaRoupaDao
     lateinit var recyclerView: RecyclerView
 
 
@@ -31,16 +27,22 @@ class ListaRoupasActivity : AppCompatActivity() {
         setTitle(getString(R.string.titulo_bar_lista_roupas))
         inicializaAdapter()
         InicializaBotaoDelivery()
-        verificaSeHouveEdicao()
     }
-
 
     private fun inicializaAdapter() {
         recyclerView = findViewById(R.id.activity_lista_roupas_recyclerview)
-        listaRoupas.addAll(dao.todas())
-        adapter = ListaRoupasAdapter(this, listaRoupas)
+        inicializaDao()
+        adapter = ListaRoupasAdapter(this, pecaRoupaDao)
         recyclerView.adapter = adapter
         configuraSwipe()
+    }
+
+    private fun atualizaAdapter() {
+        adapter.atualiza()
+    }
+
+    private fun inicializaDao() {
+        pecaRoupaDao = LavanderiaDatabase.getAppDatabase(context = this).getPecaRoupaDao()
     }
 
     private fun configuraSwipe() {
@@ -48,63 +50,44 @@ class ListaRoupasActivity : AppCompatActivity() {
         itemTouchHelper.attachToRecyclerView(recyclerView)
     }
 
-
-    private fun verificaSeHouveEdicao() {
-        var dadosRecebidos = intent
-        if (condicaoParaEdicao(dadosRecebidos)) {
-            var pecaRoupa =
-                dadosRecebidos.getSerializableExtra(EXTRA_PECA_PARA_EDICAO) as PecaRoupa
-            var posicao =
-                dadosRecebidos.getIntExtra(
-                    EXTRA_POSICAO_PECA_PARA_EDICAO,
-                    POSICAO_INVALIDA
-                )
-            dao.altera(posicao, pecaRoupa)
-            adapter.alteraPecaRoupa(posicao, pecaRoupa)
-        }
-    }
-
-    private fun condicaoParaEdicao(dadosRecebidos: Intent) =
-        dadosRecebidos.hasExtra(EXTRA_PECA_PARA_EDICAO) && dadosRecebidos.hasExtra(
-            EXTRA_POSICAO_PECA_PARA_EDICAO
-        )
-
-
     private fun InicializaBotaoDelivery() {
         var btnDelivery =
             findViewById<FloatingActionButton>(R.id.activity_lista_roupas_fab_delivery)
         btnDelivery.setOnClickListener {
             val vaiParaFormularioDelivery =
                 Intent(this, FormularioSolicitacaoDeliveryActivity::class.java)
-            startActivityForResult(
-                vaiParaFormularioDelivery,
-                CODIGO_REQUISICAO_PECA_DELIVERY
+            startActivity(
+                vaiParaFormularioDelivery
             )
 
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        populaAdapter()
+    }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (data != null) {
-            if (requestCode == CODIGO_REQUISICAO_PECA_DELIVERY &&
-                resultCode == CODIGO_RESULTADO_REQUISICAO_PECA_DELIVERY &&
-                data.hasExtra(
-                    EXTRA_PECA_ROUPA
-                )
-            ) {
-                val pecaRoupa: PecaRoupa =
-                    data.getSerializableExtra(EXTRA_PECA_ROUPA) as PecaRoupa
-                dao.insere(pecaRoupa)
-                adapter.adicionaPecaRoupa(pecaRoupa)
-            }
+    private fun populaAdapter() {
+        var dadosRecebidos = intent
+        if (verificaSeVoltouDaEdicao(dadosRecebidos)) {
+            val pecaRoupa =
+                dadosRecebidos.getSerializableExtra(EXTRA_PECA_PARA_EDICAO) as PecaRoupa
+            EditaPecaRoupaTask(
+                pecaRoupaDao,
+                mutableListOf(pecaRoupa),
+                object : EditaPecaRoupaTask.ListenerEditaPecaRoupa {
+                    override fun editado(nomePeca: String?) {
+                        atualizaAdapter()
+                    }
+                }).execute()
+        } else {
+            atualizaAdapter()
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-    }
+    private fun verificaSeVoltouDaEdicao(dadosRecebidos: Intent) =
+        dadosRecebidos.hasExtra(EXTRA_PECA_PARA_EDICAO)
 
     override fun onBackPressed() {
         moveTaskToBack(true)
