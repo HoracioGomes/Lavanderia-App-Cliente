@@ -5,11 +5,11 @@ import android.widget.Toast
 import androidx.recyclerview.widget.ItemTouchHelper.*
 import androidx.recyclerview.widget.RecyclerView
 import com.example.lavanderia_cliente.R
-import com.example.lavanderia_cliente.dao.PecaRoupaDao
 import com.example.lavanderia_cliente.ui.recyclerview.adapter.ListaRoupasAdapter
 
 class PecaRoupaItemTouchCallback(var context: Context, var adapter: ListaRoupasAdapter) :
     Callback() {
+
     override fun getMovementFlags(
         recyclerView: RecyclerView,
         viewHolder: RecyclerView.ViewHolder
@@ -24,14 +24,12 @@ class PecaRoupaItemTouchCallback(var context: Context, var adapter: ListaRoupasA
         viewHolder: RecyclerView.ViewHolder,
         target: RecyclerView.ViewHolder
     ): Boolean {
-        PecaRoupaDao().troca(viewHolder.adapterPosition, target.adapterPosition)
         adapter.troca(viewHolder.adapterPosition, target.adapterPosition)
         return true
     }
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
         val position = viewHolder.adapterPosition
-        PecaRoupaDao().remove(position)
         adapter.remove(position)
         Toast.makeText(
             context, context.getString(R.string.msg_finalizacao_doacao),

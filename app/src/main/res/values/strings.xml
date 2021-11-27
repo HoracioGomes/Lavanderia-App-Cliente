@@ -4,4 +4,5 @@
     <string name="msg_finalizacao_doacao">Aguardando implementação da API para prosseguir com doação...</string>
     <string name="titulo_bar_lista_roupas">Roupas</string>
     <string name="titulo_bar_formulario_solic_edicao">Peça</string>
+    <string name="nome_db">lavanderia_db</string>
 </resources>
