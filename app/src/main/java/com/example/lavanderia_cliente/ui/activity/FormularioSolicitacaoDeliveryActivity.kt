@@ -7,16 +7,15 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import com.example.lavanderia_cliente.R
-import com.example.lavanderia_cliente.dao.PecaRoupaDao
+import com.example.lavanderia_cliente.asynctasks.EditaPecaRoupaTask
+import com.example.lavanderia_cliente.asynctasks.SalvaPecaRoupaTask
+import com.example.lavanderia_cliente.database.LavanderiaDatabase
+import com.example.lavanderia_cliente.database.dao.PecaRoupaDao
 import com.example.lavanderia_cliente.model.PecaRoupa
-import com.example.lavanderia_cliente.ui.utils.Constantes.Companion.CODIGO_RESULTADO_REQUISICAO_PECA_DELIVERY
 import com.example.lavanderia_cliente.ui.utils.Constantes.Companion.EXTRA_PECA_PARA_EDICAO
-import com.example.lavanderia_cliente.ui.utils.Constantes.Companion.EXTRA_PECA_ROUPA
-import com.example.lavanderia_cliente.ui.utils.Constantes.Companion.EXTRA_POSICAO_PECA_PARA_EDICAO
-
 
 class FormularioSolicitacaoDeliveryActivity : AppCompatActivity() {
-    private lateinit var dao: PecaRoupaDao
+    private lateinit var pecaRoupaDao: PecaRoupaDao
     private lateinit var editTextTipoPeca: EditText
     private lateinit var buttonSolicitarDelivery: Button
     private lateinit var buttonEditaPeca: Button
@@ -25,42 +24,39 @@ class FormularioSolicitacaoDeliveryActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_formulario_solicitacao_delivery_layout)
         setTitle(getString(R.string.titulo_bar_formulario_solic_edicao))
+        inicializaDao()
         inicializacaoBotoes()
-        inicializacaoDao()
         inicializacaoEditTextTipoPeca()
-        AlternaSeEdicaoOuSolicitacao()
+        VerificaSeEdicaoOuDelivery()
     }
 
-    private fun AlternaSeEdicaoOuSolicitacao() {
+    private fun inicializaDao() {
+        pecaRoupaDao = LavanderiaDatabase.getAppDatabase(this).getPecaRoupaDao()
+    }
+
+    private fun VerificaSeEdicaoOuDelivery() {
         var dadosRecebidos = intent
         if (condicaoParaEdicao(dadosRecebidos)) {
             buttonEditaPeca.visibility = View.VISIBLE
             val pecaParaEdicao: PecaRoupa =
                 dadosRecebidos.extras?.getSerializable(EXTRA_PECA_PARA_EDICAO) as PecaRoupa
-            val posicao: Int =
-                dadosRecebidos.extras?.getSerializable(EXTRA_POSICAO_PECA_PARA_EDICAO) as Int
             editTextTipoPeca.setText(pecaParaEdicao.nome)
-            cliqueBotaoEdita(pecaParaEdicao, posicao)
+            cliqueBotaoEdita(pecaParaEdicao)
         } else {
             buttonSolicitarDelivery.visibility = View.VISIBLE
             cliqueBotaoDelivery()
-
         }
     }
 
     private fun condicaoParaEdicao(dadosRecebidos: Intent) =
-        dadosRecebidos.hasExtra(EXTRA_PECA_PARA_EDICAO) && dadosRecebidos.hasExtra(
-            EXTRA_POSICAO_PECA_PARA_EDICAO
-        )
+        dadosRecebidos.hasExtra(EXTRA_PECA_PARA_EDICAO)
+
 
     private fun inicializacaoEditTextTipoPeca() {
         editTextTipoPeca =
             findViewById(R.id.activity_formulario_edittext_tipo_peca)
     }
 
-    private fun inicializacaoDao() {
-        dao = PecaRoupaDao()
-    }
 
     private fun inicializacaoBotoes() {
         buttonSolicitarDelivery =
@@ -70,30 +66,48 @@ class FormularioSolicitacaoDeliveryActivity : AppCompatActivity() {
 
     private fun cliqueBotaoDelivery() {
         buttonSolicitarDelivery.setOnClickListener {
-            val nomePeca: String = editTextTipoPeca.text.toString()
-            val pecaParaDelivery =
-                PecaRoupa(nome = nomePeca, status = getString(R.string.status_esperando_coleta))
-            val voltaParaListaRoupas = Intent()
-            voltaParaListaRoupas.putExtra(EXTRA_PECA_ROUPA, pecaParaDelivery)
-            setResult(
-                CODIGO_RESULTADO_REQUISICAO_PECA_DELIVERY,
-                voltaParaListaRoupas
-            )
-            finish()
-
+            salvaPecaRoupa()
         }
     }
 
-    private fun cliqueBotaoEdita(pecaRoupa: PecaRoupa, posicao: Int) {
+    private fun salvaPecaRoupa() {
+        val nomePeca: String = editTextTipoPeca.text.toString()
+        val pecaParaDelivery =
+            PecaRoupa(
+                nome = nomePeca,
+                status = getString(R.string.status_esperando_coleta)
+            )
+        SalvaPecaRoupaTask(
+            pecaRoupaDao,
+            pecaParaDelivery,
+            object : SalvaPecaRoupaTask.ListenerSalvaPeca {
+                override fun salvo(id: Long?) {
+                    if (id != null) {
+                        pecaParaDelivery.id = id
+                        pecaParaDelivery.posicaoNaLista = id
+                        EditaPecaRoupaTask(
+                            pecaRoupaDao,
+                            mutableListOf(pecaParaDelivery),
+                            object : EditaPecaRoupaTask.ListenerEditaPecaRoupa {
+                                override fun editado(nomePeca: String?) {
+                                    finish()
+                                }
+
+                            }).execute()
+                    }
+                }
+
+            }).execute()
+
+
+    }
+
+    private fun cliqueBotaoEdita(pecaRoupa: PecaRoupa) {
         buttonEditaPeca.setOnClickListener {
             val nomePecaEditado: String = editTextTipoPeca.text.toString()
             pecaRoupa.nome = nomePecaEditado
             val voltaParaListaRoupas = Intent(this, ListaRoupasActivity::class.java)
             voltaParaListaRoupas.putExtra(EXTRA_PECA_PARA_EDICAO, pecaRoupa)
-            voltaParaListaRoupas.putExtra(
-                EXTRA_POSICAO_PECA_PARA_EDICAO,
-                posicao
-            )
             startActivity(voltaParaListaRoupas)
             finish()
         }
