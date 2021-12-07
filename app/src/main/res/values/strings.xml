@@ -5,4 +5,13 @@
     <string name="titulo_bar_lista_roupas">Roupas</string>
     <string name="titulo_bar_formulario_solic_edicao">Peça</string>
     <string name="nome_db">lavanderia_db</string>
+    <string name="mensagem_impossibilidade_requisicao">Não foi possível realizar a requisição!</string>
+    <string name="mensagem_falha_requisicao">Houve uma falha na requisição!</string>
+    <string name="mensagem_sem_dados_internos">Não foram encontrados dados no dispositivo!</string>
+    <string name="mensagen_conectese_a_rede">Conecte-se a uma rede!</string>
+    <string name="mensagen_conexao_necessaria_acao">É necessário estar conectado para realizar esta ação</string>
+    <string name="titulo_dialog_cancelar_processo">Cancelar Processo</string>
+    <string name="mensagem_dialog_cancelar_processo">Deseja realmente cancelar o processo?</string>
+    <string name="toast_cancelado">Cancelado!</string>
+    <string name="toast_acao_revertida">A ação foi revertida!</string>
 </resources>

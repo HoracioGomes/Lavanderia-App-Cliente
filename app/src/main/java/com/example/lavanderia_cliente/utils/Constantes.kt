@@ -1,4 +1,4 @@
-package com.example.lavanderia_cliente.ui.utils
+package com.example.lavanderia_cliente.utils
 
 class Constantes {
     companion object {

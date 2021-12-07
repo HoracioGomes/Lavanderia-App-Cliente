@@ -18,7 +18,7 @@ import com.example.lavanderia_cliente.model.Telefone
         PecaRoupa::class,
         Telefone::class
     ],
-    version = 8,
+    version = 10,
     exportSchema = false
 
 )
