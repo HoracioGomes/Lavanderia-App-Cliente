@@ -6,13 +6,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.lavanderia_cliente.R
-import com.example.lavanderia_cliente.asynctasks.EditaPecaRoupaTask
 import com.example.lavanderia_cliente.database.LavanderiaDatabase
 import com.example.lavanderia_cliente.database.dao.PecaRoupaDao
-import com.example.lavanderia_cliente.model.PecaRoupa
 import com.example.lavanderia_cliente.ui.activity.callback.PecaRoupaItemTouchCallback
 import com.example.lavanderia_cliente.ui.recyclerview.adapter.ListaRoupasAdapter
-import com.example.lavanderia_cliente.ui.utils.Constantes.Companion.EXTRA_PECA_PARA_EDICAO
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class ListaRoupasActivity : AppCompatActivity() {
@@ -65,29 +62,9 @@ class ListaRoupasActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        populaAdapter()
+        atualizaAdapter()
     }
 
-    private fun populaAdapter() {
-        var dadosRecebidos = intent
-        if (verificaSeVoltouDaEdicao(dadosRecebidos)) {
-            val pecaRoupa =
-                dadosRecebidos.getSerializableExtra(EXTRA_PECA_PARA_EDICAO) as PecaRoupa
-            EditaPecaRoupaTask(
-                pecaRoupaDao,
-                mutableListOf(pecaRoupa),
-                object : EditaPecaRoupaTask.ListenerEditaPecaRoupa {
-                    override fun editado(nomePeca: String?) {
-                        atualizaAdapter()
-                    }
-                }).execute()
-        } else {
-            atualizaAdapter()
-        }
-    }
-
-    private fun verificaSeVoltouDaEdicao(dadosRecebidos: Intent) =
-        dadosRecebidos.hasExtra(EXTRA_PECA_PARA_EDICAO)
 
     override fun onBackPressed() {
         moveTaskToBack(true)

@@ -5,7 +5,7 @@
     android:layout_height="match_parent">
 
     <EditText
-        android:id="@+id/activity_formulario_edittext_tipo_peca"
+        android:id="@+id/activity_formulario_edittext_nome_peca"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"

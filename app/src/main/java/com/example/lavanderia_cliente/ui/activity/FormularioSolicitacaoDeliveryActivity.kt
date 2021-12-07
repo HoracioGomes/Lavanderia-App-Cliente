@@ -7,16 +7,16 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import com.example.lavanderia_cliente.R
-import com.example.lavanderia_cliente.asynctasks.EditaPecaRoupaTask
-import com.example.lavanderia_cliente.asynctasks.SalvaPecaRoupaTask
-import com.example.lavanderia_cliente.database.LavanderiaDatabase
-import com.example.lavanderia_cliente.database.dao.PecaRoupaDao
 import com.example.lavanderia_cliente.model.PecaRoupa
-import com.example.lavanderia_cliente.ui.utils.Constantes.Companion.EXTRA_PECA_PARA_EDICAO
+import com.example.lavanderia_cliente.repository.RepositoryPecaRoupa
+import com.example.lavanderia_cliente.utils.ConnectionManagerUtils
+import com.example.lavanderia_cliente.utils.Constantes.Companion.EXTRA_PECA_PARA_EDICAO
+import com.example.lavanderia_cliente.utils.DataUtils
+import com.example.lavanderia_cliente.utils.ToastUtils
+import java.util.*
 
 class FormularioSolicitacaoDeliveryActivity : AppCompatActivity() {
-    private lateinit var pecaRoupaDao: PecaRoupaDao
-    private lateinit var editTextTipoPeca: EditText
+    private lateinit var editTextNomePeca: EditText
     private lateinit var buttonSolicitarDelivery: Button
     private lateinit var buttonEditaPeca: Button
 
@@ -24,14 +24,9 @@ class FormularioSolicitacaoDeliveryActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_formulario_solicitacao_delivery_layout)
         setTitle(getString(R.string.titulo_bar_formulario_solic_edicao))
-        inicializaDao()
         inicializacaoBotoes()
-        inicializacaoEditTextTipoPeca()
+        inicializacaoEditTextNomePeca()
         VerificaSeEdicaoOuDelivery()
-    }
-
-    private fun inicializaDao() {
-        pecaRoupaDao = LavanderiaDatabase.getAppDatabase(this).getPecaRoupaDao()
     }
 
     private fun VerificaSeEdicaoOuDelivery() {
@@ -40,7 +35,7 @@ class FormularioSolicitacaoDeliveryActivity : AppCompatActivity() {
             buttonEditaPeca.visibility = View.VISIBLE
             val pecaParaEdicao: PecaRoupa =
                 dadosRecebidos.extras?.getSerializable(EXTRA_PECA_PARA_EDICAO) as PecaRoupa
-            editTextTipoPeca.setText(pecaParaEdicao.nome)
+            editTextNomePeca.setText(pecaParaEdicao.nome)
             cliqueBotaoEdita(pecaParaEdicao)
         } else {
             buttonSolicitarDelivery.visibility = View.VISIBLE
@@ -52,9 +47,9 @@ class FormularioSolicitacaoDeliveryActivity : AppCompatActivity() {
         dadosRecebidos.hasExtra(EXTRA_PECA_PARA_EDICAO)
 
 
-    private fun inicializacaoEditTextTipoPeca() {
-        editTextTipoPeca =
-            findViewById(R.id.activity_formulario_edittext_tipo_peca)
+    private fun inicializacaoEditTextNomePeca() {
+        editTextNomePeca =
+            findViewById(R.id.activity_formulario_edittext_nome_peca)
     }
 
 
@@ -71,45 +66,71 @@ class FormularioSolicitacaoDeliveryActivity : AppCompatActivity() {
     }
 
     private fun salvaPecaRoupa() {
-        val nomePeca: String = editTextTipoPeca.text.toString()
+        val nomePeca: String = editTextNomePeca.text.toString()
         val pecaParaDelivery =
             PecaRoupa(
                 nome = nomePeca,
-                status = getString(R.string.status_esperando_coleta)
+                status = getString(R.string.status_esperando_coleta),
+                data = DataUtils().dataAtualParaBanco()
             )
-        SalvaPecaRoupaTask(
-            pecaRoupaDao,
-            pecaParaDelivery,
-            object : SalvaPecaRoupaTask.ListenerSalvaPeca {
-                override fun salvo(id: Long?) {
-                    if (id != null) {
-                        pecaParaDelivery.id = id
-                        pecaParaDelivery.posicaoNaLista = id
-                        EditaPecaRoupaTask(
-                            pecaRoupaDao,
-                            mutableListOf(pecaParaDelivery),
-                            object : EditaPecaRoupaTask.ListenerEditaPecaRoupa {
-                                override fun editado(nomePeca: String?) {
-                                    finish()
-                                }
+        if (ConnectionManagerUtils().checkInternetConnection(this) == 1) {
+            RepositoryPecaRoupa(this).solicitaPecaRoupaDelivery(pecaParaDelivery,
+                object : RepositoryPecaRoupa.CallBackRepositorypecaRoupa<PecaRoupa> {
+                    override fun quandoSucesso(dados: PecaRoupa) {
+                        ToastUtils().showCenterToastShort(
+                            this@FormularioSolicitacaoDeliveryActivity,
+                            "Salvo com id ${dados.id}"
+                        )
+                        finish()
 
-                            }).execute()
                     }
-                }
 
-            }).execute()
+                    override fun quandoFalha(erro: String) {
+                        ToastUtils().showCenterToastShort(
+                            this@FormularioSolicitacaoDeliveryActivity,
+                            "Falha ao salvar:  $erro"
+                        )
+                    }
 
+                })
+        } else {
+            ToastUtils().showCenterToastShort(this, this.getString(R.string.mensagen_conectese_a_rede))
+        }
 
     }
 
     private fun cliqueBotaoEdita(pecaRoupa: PecaRoupa) {
         buttonEditaPeca.setOnClickListener {
-            val nomePecaEditado: String = editTextTipoPeca.text.toString()
+            editaPecaRoupa(pecaRoupa)
+        }
+    }
+
+    private fun editaPecaRoupa(pecaRoupa: PecaRoupa) {
+        if (ConnectionManagerUtils().checkInternetConnection(this) == 1) {
+            val nomePecaEditado: String = editTextNomePeca.text.toString()
             pecaRoupa.nome = nomePecaEditado
-            val voltaParaListaRoupas = Intent(this, ListaRoupasActivity::class.java)
-            voltaParaListaRoupas.putExtra(EXTRA_PECA_PARA_EDICAO, pecaRoupa)
-            startActivity(voltaParaListaRoupas)
-            finish()
+            RepositoryPecaRoupa(this).editaPecaRoupa(
+                pecaRoupa,
+                object : RepositoryPecaRoupa.CallBackRepositorypecaRoupa<PecaRoupa> {
+                    override fun quandoSucesso(dados: PecaRoupa) {
+                        ToastUtils().showCenterToastShort(
+                            this@FormularioSolicitacaoDeliveryActivity,
+                            "Nome Alterado: ${dados.nome}"
+                        )
+                        finish()
+
+                    }
+
+                    override fun quandoFalha(erro: String) {
+                        ToastUtils().showCenterToastShort(
+                            this@FormularioSolicitacaoDeliveryActivity,
+                            "Falha ao editar: $erro"
+                        )
+                    }
+
+                })
+        } else {
+            ToastUtils().showCenterToastShort(this, getString(R.string.mensagen_conectese_a_rede))
         }
     }
 

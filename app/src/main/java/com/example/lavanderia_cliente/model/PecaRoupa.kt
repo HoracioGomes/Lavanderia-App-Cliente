@@ -3,11 +3,14 @@ package com.example.lavanderia_cliente.model
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.google.gson.annotations.Expose
+import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 import java.text.SimpleDateFormat
 import java.util.*
 
-@Entity(
+@Entity
+//    (
 //    foreignKeys = arrayOf(
 //        ForeignKey(
 //            entity = Cliente::class,
@@ -17,13 +20,24 @@ import java.util.*
 //            onDelete = ForeignKey.CASCADE
 //        )
 //    )
-)
+//)
 class PecaRoupa(
-    @PrimaryKey(autoGenerate = true)
+//    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey()
+    @SerializedName("id")
+    @Expose
     var id: Long = 0,
+    @SerializedName("nome")
+    @Expose
     var nome: String?,
+    @SerializedName("status")
+    @Expose
     var status: String?,
-    var data: Calendar? = Calendar.getInstance(),
+    @SerializedName("data")
+    @Expose
+    var data: String?,
+    @SerializedName("posicaoNaLista")
+    @Expose
     var posicaoNaLista: Long = 0
 //    var idCliente: Int?
 ) : Serializable {
