@@ -79,7 +79,7 @@ class FormularioSolicitacaoDeliveryActivity : AppCompatActivity() {
                     override fun quandoSucesso(dados: PecaRoupa) {
                         ToastUtils().showCenterToastShort(
                             this@FormularioSolicitacaoDeliveryActivity,
-                            "Salvo com id ${dados.id}"
+                            "Salvo"
                         )
                         finish()
 

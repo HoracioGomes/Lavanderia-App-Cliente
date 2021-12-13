@@ -20,7 +20,7 @@ class BaseCallBackSemBody<T>(
     }
 
     override fun onFailure(call: Call<T>, t: Throwable) {
-        callBackSemBody.quandoFalha(context.getString(R.string.mensagem_falha_requisicao) + t.message)
+        t.message?.let { callBackSemBody.quandoFalha(it) }
     }
 
     interface CallBackRespostaSemBody {

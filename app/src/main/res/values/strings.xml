@@ -5,7 +5,7 @@
     <string name="titulo_bar_lista_roupas">Roupas</string>
     <string name="titulo_bar_formulario_solic_edicao">Peça</string>
     <string name="nome_db">lavanderia_db</string>
-    <string name="mensagem_impossibilidade_requisicao">Não foi possível realizar a requisição!</string>
+    <string name="mensagem_impossibilidade_requisicao">Não foi possível realizar a requisição!\nContate o suporte.</string>
     <string name="mensagem_falha_requisicao">Houve uma falha na requisição!</string>
     <string name="mensagem_sem_dados_internos">Não foram encontrados dados no dispositivo!</string>
     <string name="mensagen_conectese_a_rede">Conecte-se a uma rede!</string>
@@ -14,4 +14,13 @@
     <string name="mensagem_dialog_cancelar_processo">Deseja realmente cancelar o processo?</string>
     <string name="toast_cancelado">Cancelado!</string>
     <string name="toast_acao_revertida">A ação foi revertida!</string>
+    <string name="extra_cliente_logado">cliente_logado</string>
+    <string name="extra_token_valido">token_valido</string>
+    <string name="mensagem_requisicao_login_expirado">Login expirado!</string>
+    <string name="mensagem_requisicao_dados_incorretos">Dados incorretos!</string>
+    <string name="mtogle_open">Open</string>
+    <string name="mtogle_close">Close</string>
+    <string name="mensagem_logout">Tem certeza que deseja realizar o logout?</string>
+    <string name="titulo_logout">Deslogar</string>
+    <string name="mensagem_falha_deslogar">Falha ao deslogar!</string>
 </resources>
