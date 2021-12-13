@@ -14,6 +14,7 @@ import com.example.lavanderia_cliente.database.dao.PecaRoupaDao
 import com.example.lavanderia_cliente.model.PecaRoupa
 import com.example.lavanderia_cliente.repository.RepositoryPecaRoupa
 import com.example.lavanderia_cliente.ui.activity.FormularioSolicitacaoDeliveryActivity
+import com.example.lavanderia_cliente.ui.activity.LoginActivity
 import com.example.lavanderia_cliente.utils.AlertDialogUtils
 import com.example.lavanderia_cliente.utils.ConnectionManagerUtils
 import com.example.lavanderia_cliente.utils.Constantes.Companion.EXTRA_PECA_PARA_EDICAO
@@ -68,7 +69,9 @@ class ListaRoupasAdapter(
                 }
 
                 override fun quandoFalha(erro: String) {
-                    Toast.makeText(context, erro, Toast.LENGTH_SHORT).show()
+                    ToastUtils().showCenterToastShort(context, erro)
+                    val intent = Intent(context, LoginActivity::class.java)
+                    context.startActivity(intent)
                 }
             })
         } else {
@@ -89,11 +92,12 @@ class ListaRoupasAdapter(
             object : AlertDialogUtils.CallBackDialog {
                 override fun cliqueBotaoConfirma() {
                     if (ConnectionManagerUtils().checkInternetConnection(context) == 1) {
+                        val spinner = ProgressBarUtils.mostraProgressBar(context)
                         RepositoryPecaRoupa(context).deletaPecaRoupa(pecasRoupas?.get(position)?.id,
                             object : RepositoryPecaRoupa.CallBackRepositorypecaRoupaSemBody {
                                 override fun quandoSucesso() {
-                                    mostraSpinner()
                                     atualiza()
+                                    spinner.dismiss()
                                     ToastUtils().showCenterToastShort(
                                         context,
                                         context.getString(R.string.toast_cancelado)
@@ -101,10 +105,7 @@ class ListaRoupasAdapter(
                                 }
 
                                 override fun quandoFalha(erro: String) {
-                                    ToastUtils().showCenterToastShort(
-                                        context,
-                                        "Falha ao cancelar!\n$erro"
-                                    )
+                                    spinner.dismiss()
                                     atualiza()
                                 }
                             })
@@ -124,14 +125,6 @@ class ListaRoupasAdapter(
                     atualiza()
                 }
             })
-    }
-
-    private fun mostraSpinner() {
-        val spinner = ProgressBarUtils.mostraProgressBar(context)
-        val handler = Handler()
-        handler.postDelayed({
-            spinner.dismiss()
-        }, 500)
     }
 
 
@@ -160,6 +153,7 @@ class ListaRoupasAdapter(
                     }
 
                     override fun quandoFalha(erro: String) {
+                        atualiza()
                     }
 
                 })
