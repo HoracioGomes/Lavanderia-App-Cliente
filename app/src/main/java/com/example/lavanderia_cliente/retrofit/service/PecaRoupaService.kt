@@ -5,18 +5,18 @@ import retrofit2.Call
 import retrofit2.http.*
 
 interface PecaRoupaService {
-    @GET("roupas")
+    @GET("pecas-roupas/roupas")
     fun buscaTodasPecas(): Call<MutableList<PecaRoupa>>
 
-    @POST("roupas")
+    @POST("pecas-roupas/roupas")
     fun salva(@Body pecaRoupa: PecaRoupa): Call<PecaRoupa>
 
-    @PUT("roupas")
+    @PUT("pecas-roupas/roupas")
     fun edita(@Body pecaRoupa: PecaRoupa): Call<PecaRoupa>
 
-    @PUT("roupas/muda-posicao")
+    @PUT("pecas-roupas/roupas/muda-posicao")
     fun trocaPosicao(@Body pecaRoupa: MutableList<PecaRoupa?>): Call<Void>
 
-    @DELETE("roupas/{id}")
+    @DELETE("pecas-roupas/roupas/{id}")
     fun delete(@Path("id") id: Long?) : Call<Void>
 }

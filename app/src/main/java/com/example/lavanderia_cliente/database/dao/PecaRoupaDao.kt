@@ -6,7 +6,7 @@ import com.example.lavanderia_cliente.model.PecaRoupa
 @Dao
 //abstract class PecaRoupaDaoRoom: BaseDAO<PecaRoupa>
 abstract class PecaRoupaDao {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract fun salva(pecaRoupa: PecaRoupa): Long
 
     @Delete

@@ -1,33 +1,23 @@
 package com.example.lavanderia_cliente.repository
 
 import android.content.Context
+import com.example.lavanderia_cliente.asynctasks.BaseAsyncTask
 import com.example.lavanderia_cliente.database.LavanderiaDatabase
 import com.example.lavanderia_cliente.model.PecaRoupa
+import com.example.lavanderia_cliente.model.Token
 import com.example.lavanderia_cliente.retrofit.LavanderiaRetrofit
 import com.example.lavanderia_cliente.retrofit.callbacks.BaseCallBackSemBody
 import com.example.lavanderia_cliente.retrofit.callbacks.BaseCallback
+import com.example.lavanderia_cliente.ui.activity.ListaRoupasActivity.Companion.token
 
 class RepositoryPecaRoupa(val context: Context) {
-    val pecaRoupaDao = LavanderiaDatabase.getAppDatabase(context).getPecaRoupaDao()
+    val tokenDao = LavanderiaDatabase.getAppDatabase(context).getTokenDao()
     val pecaRoupaService = LavanderiaRetrofit().pecaRoupaService()
 
     fun buscaPecasRoupa(callback: CallBackRepositorypecaRoupa<MutableList<PecaRoupa>>) {
 
-// Busca interna
-//    BuscaPecasRoupaTask(pecaRoupaDao, object : BuscaPecasRoupaTask.ListenerBuscaPecasRoupa {
-//            override fun retorno(pecasRoupasRetornadas: MutableList<PecaRoupa>?) {
-//                if (pecasRoupasRetornadas != null) {
-//                    callback.quandoSucesso(pecasRoupasRetornadas)
-//                } else {
-//                    callback.quandoFalha(context.getString(R.string.mensagem_sem_dados_internos))
-//                }
-//
-//            }
-//        }).execute()
-
-        val callPecaRoupa = pecaRoupaService.buscaTodasPecas()
-
-        callPecaRoupa.enqueue(
+        val callPecaRoupa = pecaRoupaService?.buscaTodasPecas()
+        callPecaRoupa?.enqueue(
             BaseCallback(context,
                 object : BaseCallback.CallbackResposta<MutableList<PecaRoupa>> {
                     override fun quandoSucesso(dados: MutableList<PecaRoupa>?) {
@@ -35,7 +25,7 @@ class RepositoryPecaRoupa(val context: Context) {
                     }
 
                     override fun quandoFalha(mensagem: String) {
-                        callback.quandoFalha(mensagem)
+                        deletaTokenTask(token, callback, mensagem)
                     }
 
                 })
@@ -48,30 +38,9 @@ class RepositoryPecaRoupa(val context: Context) {
         callback: CallBackRepositorypecaRoupa<PecaRoupa>
     ) {
 
-// Salvamento interno
-//        SalvaPecaRoupaTask(
-//            dao,
-//            pecaRoupa,
-//            object : SalvaPecaRoupaTask.ListenerSalvaPeca {
-//                override fun salvo(id: Long?) {
-//                    if (id != null) {
-//                        pecaRoupa.id = id
-//                        pecaRoupa.posicaoNaLista = id
-//                        EditaPecaRoupaTask(
-//                            dao,
-//                            mutableListOf(pecaRoupa),
-//                            object : EditaPecaRoupaTask.ListenerEditaPecaRoupa {
-//                                override fun editado(nomePeca: String?) {
-//                                }
-//
-//                            }).execute()
-//                    }
-//                }
-//
-//            }).execute()
 
-        val callSalvaPecaRoupa = pecaRoupaService.salva(pecaRoupa)
-        callSalvaPecaRoupa.enqueue(
+        val callSalvaPecaRoupa = pecaRoupaService?.salva(pecaRoupa)
+        callSalvaPecaRoupa?.enqueue(
             BaseCallback(
                 context,
                 object : BaseCallback.CallbackResposta<PecaRoupa> {
@@ -92,7 +61,7 @@ class RepositoryPecaRoupa(val context: Context) {
         pecasRoupa: PecaRoupa,
         callback: CallBackRepositorypecaRoupa<PecaRoupa>
     ) {
-        val callEditaPecaRoupa = pecaRoupaService.edita(pecasRoupa)
+        val callEditaPecaRoupa = pecaRoupaService?.edita(pecasRoupa)
         callEditaPecaRoupa?.enqueue(
             BaseCallback(
                 context,
@@ -113,8 +82,8 @@ class RepositoryPecaRoupa(val context: Context) {
         pecasRoupastrocadas: MutableList<PecaRoupa?>,
         callback: CallBackRepositorypecaRoupaSemBody
     ) {
-        val call = pecaRoupaService.trocaPosicao(pecasRoupastrocadas)
-        call.enqueue(
+        val call = pecaRoupaService?.trocaPosicao(pecasRoupastrocadas)
+        call?.enqueue(
             BaseCallBackSemBody(
                 context,
                 object : BaseCallBackSemBody.CallBackRespostaSemBody {
@@ -133,16 +102,8 @@ class RepositoryPecaRoupa(val context: Context) {
 
     fun deletaPecaRoupa(id: Long?, callback: CallBackRepositorypecaRoupaSemBody) {
 
-// Deletar internamente
-//        DeletaPecaRoupaTask(pecaRoupaDao, pecasRoupas?.get(position),
-//            object : DeletaPecaRoupaTask.ListenerDeletaPecaRoupa {
-//                override fun deletada(nomePeca: String?) {
-//                }
-//
-//            }).execute()
-
-        val call = pecaRoupaService.delete(id)
-        call.enqueue(
+        val call = pecaRoupaService?.delete(id)
+        call?.enqueue(
             BaseCallBackSemBody(
                 context,
                 object : BaseCallBackSemBody.CallBackRespostaSemBody {
@@ -156,6 +117,30 @@ class RepositoryPecaRoupa(val context: Context) {
 
                 })
         )
+    }
+
+    private fun deletaTokenTask(
+        token: Token?,
+        callbackRepositoryPecaRoupa: CallBackRepositorypecaRoupa<MutableList<PecaRoupa>>,
+        mensagem: String
+    ) {
+        BaseAsyncTask<Int?>(object :
+            BaseAsyncTask.ListenerBaseAsyncExecuta<Int?> {
+            override fun executando(): Int? {
+                return token?.let { tokenDao.delete(it) }
+            }
+
+        },
+            object :
+                BaseAsyncTask.ListenerBaseAsyncFinaliza<Int?> {
+                override fun finalizado(result: Int?) {
+
+                    callbackRepositoryPecaRoupa.quandoFalha(
+                        mensagem
+                    )
+                }
+
+            }).execute()
     }
 
 
