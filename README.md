@@ -5,7 +5,6 @@
 <ul>
 <li>RecyclerView</li>
 <li>AsyncTak</li>
-<li>Retrofit</li>
 <li>Room</li>
 <li>Retrofit</li>
 <li>Constraint Layout</li>
