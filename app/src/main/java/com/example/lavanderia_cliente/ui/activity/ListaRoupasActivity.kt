@@ -7,27 +7,60 @@ import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.lavanderia_cliente.R
 import com.example.lavanderia_cliente.database.LavanderiaDatabase
+import com.example.lavanderia_cliente.database.dao.ClienteDao
 import com.example.lavanderia_cliente.database.dao.PecaRoupaDao
+import com.example.lavanderia_cliente.database.dao.TokenDao
 import com.example.lavanderia_cliente.model.Cliente
 import com.example.lavanderia_cliente.model.Token
-import com.example.lavanderia_cliente.repository.RepositoryLogin
+import com.example.lavanderia_cliente.repository.RepositoryUsuario
+import com.example.lavanderia_cliente.repository.RepositoryPecaRoupa
 import com.example.lavanderia_cliente.ui.activity.callback.PecaRoupaItemTouchCallback
 import com.example.lavanderia_cliente.ui.recyclerview.adapter.ListaRoupasAdapter
+import com.example.lavanderia_cliente.ui.viewmodel.PecaRoupaViewModel
+import com.example.lavanderia_cliente.ui.viewmodel.UsuarioViewModel
+import com.example.lavanderia_cliente.ui.viewmodel.factory.PecaRoupaViewModelFactory
+import com.example.lavanderia_cliente.ui.viewmodel.factory.UsuarioViewModelFactory
 import com.example.lavanderia_cliente.utils.AlertDialogUtils
 import com.example.lavanderia_cliente.utils.ToastUtils
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 
-class ListaRoupasActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+class ListaRoupasActivity() : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var adapter: ListaRoupasAdapter
-    private lateinit var pecaRoupaDao: PecaRoupaDao
     private lateinit var recyclerView: RecyclerView
     private lateinit var navigationView: NavigationView
     private lateinit var drawerLayout: DrawerLayout
+
+    private val pecaRoupaDao: PecaRoupaDao by lazy {
+        LavanderiaDatabase.getAppDatabase(this).getPecaRoupaDao()
+    }
+
+    private val clienteDao: ClienteDao by lazy {
+        LavanderiaDatabase.getAppDatabase(this).getClienteDao()
+    }
+
+    private val tokenDao: TokenDao by lazy {
+        LavanderiaDatabase.getAppDatabase(this).getTokenDao()
+    }
+
+    private val viewModelListaRoupas by lazy {
+        val repository = RepositoryPecaRoupa(pecaRoupaDao)
+        val provider = ViewModelProviders.of(this, PecaRoupaViewModelFactory(repository))
+        provider.get(PecaRoupaViewModel::class.java)
+    }
+
+    private val viewModelUsuario by lazy {
+        val repository = RepositoryUsuario(clienteDao, tokenDao)
+        val provider = ViewModelProviders.of(this, UsuarioViewModelFactory(repository))
+        provider.get(UsuarioViewModel::class.java)
+    }
+
 
     companion object {
         var cliente: Cliente? = null
@@ -72,18 +105,10 @@ class ListaRoupasActivity : AppCompatActivity(), NavigationView.OnNavigationItem
 
     private fun inicializaAdapter() {
         recyclerView = findViewById(R.id.activity_lista_roupas_recyclerview)
-        inicializaDao()
-        adapter = ListaRoupasAdapter(this, pecaRoupaDao)
+        adapter = ListaRoupasAdapter(this, viewModelListaRoupas)
         recyclerView.adapter = adapter
-        configuraSwipe()
-    }
-
-    private fun atualizaAdapter() {
         adapter.atualiza()
-    }
-
-    private fun inicializaDao() {
-        pecaRoupaDao = LavanderiaDatabase.getAppDatabase(context = this).getPecaRoupaDao()
+        configuraSwipe()
     }
 
     private fun configuraSwipe() {
@@ -106,7 +131,6 @@ class ListaRoupasActivity : AppCompatActivity(), NavigationView.OnNavigationItem
 
     override fun onResume() {
         super.onResume()
-        atualizaAdapter()
     }
 
 
@@ -122,24 +146,28 @@ class ListaRoupasActivity : AppCompatActivity(), NavigationView.OnNavigationItem
                     object : AlertDialogUtils.CallBackDialog {
                         override fun cliqueBotaoConfirma() {
 
-                            RepositoryLogin(this@ListaRoupasActivity).deletaToken(token,
-                                object : RepositoryLogin.CallbackRepositoryLogin<Int?> {
-                                    override fun quandoSucesso(dados: Int?) {
-                                        val intent = Intent(
-                                            this@ListaRoupasActivity,
-                                            LoginActivity::class.java
-                                        )
-                                        startActivity(intent)
-                                    }
 
-                                    override fun quandoFalha(erro: String) {
-                                        ToastUtils().showCenterToastShort(
-                                            this@ListaRoupasActivity,
-                                            getString(R.string.mensagem_falha_deslogar)
-                                        )
-                                    }
+                            token?.let { token ->
+                                viewModelUsuario.
+                                        deletarToken(token).observe(this@ListaRoupasActivity,
+                                    Observer { resourcePosDelecao ->
 
-                                })
+                                        if (resourcePosDelecao.dados != null){
+                                            val intent = Intent(
+                                                this@ListaRoupasActivity,
+                                                LoginActivity::class.java
+                                            )
+                                            startActivity(intent)
+                                        }else{
+                                            ToastUtils().showCenterToastShort(
+                                                this@ListaRoupasActivity,
+                                                getString(R.string.mensagem_falha_deslogar)
+                                            )
+                                        }
+                                    })
+
+                            }
+
 
                         }
 

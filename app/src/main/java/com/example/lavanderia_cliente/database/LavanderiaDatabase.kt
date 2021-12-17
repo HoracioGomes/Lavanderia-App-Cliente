@@ -35,9 +35,13 @@ abstract class LavanderiaDatabase : RoomDatabase() {
 
     companion object {
 
+        private lateinit var db: LavanderiaDatabase
+
         fun getAppDatabase(context: Context?): LavanderiaDatabase {
 
-            return Room.databaseBuilder(
+            if (::db.isInitialized) return db
+
+            db = Room.databaseBuilder(
                 context!!,
                 LavanderiaDatabase::class.java,
                 context.getString(R.string.nome_db)
@@ -47,6 +51,8 @@ abstract class LavanderiaDatabase : RoomDatabase() {
 //                )
                 .fallbackToDestructiveMigration()
                 .build()
+
+            return db
         }
 
     }

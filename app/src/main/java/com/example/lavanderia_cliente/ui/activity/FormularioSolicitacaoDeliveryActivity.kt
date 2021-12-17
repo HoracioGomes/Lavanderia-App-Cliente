@@ -6,9 +6,14 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProviders
 import com.example.lavanderia_cliente.R
+import com.example.lavanderia_cliente.database.LavanderiaDatabase
+import com.example.lavanderia_cliente.database.dao.PecaRoupaDao
 import com.example.lavanderia_cliente.model.PecaRoupa
 import com.example.lavanderia_cliente.repository.RepositoryPecaRoupa
+import com.example.lavanderia_cliente.ui.viewmodel.PecaRoupaViewModel
+import com.example.lavanderia_cliente.ui.viewmodel.factory.PecaRoupaViewModelFactory
 import com.example.lavanderia_cliente.utils.ConnectionManagerUtils
 import com.example.lavanderia_cliente.utils.Constantes.Companion.EXTRA_PECA_PARA_EDICAO
 import com.example.lavanderia_cliente.utils.DataUtils
@@ -20,6 +25,16 @@ class FormularioSolicitacaoDeliveryActivity : AppCompatActivity() {
     private lateinit var buttonSolicitarDelivery: Button
     private lateinit var buttonEditaPeca: Button
 
+    private val pecaRoupaDao: PecaRoupaDao by lazy {
+        LavanderiaDatabase.getAppDatabase(this).getPecaRoupaDao()
+    }
+
+    private val viewModelPecaRoupa by lazy {
+        val repositoryPecaRoupa: RepositoryPecaRoupa = RepositoryPecaRoupa(pecaRoupaDao)
+        val provider = ViewModelProviders.of(this, PecaRoupaViewModelFactory(repositoryPecaRoupa))
+        provider.get(PecaRoupaViewModel::class.java)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_formulario_solicitacao_delivery_layout)
@@ -28,6 +43,7 @@ class FormularioSolicitacaoDeliveryActivity : AppCompatActivity() {
         inicializacaoEditTextNomePeca()
         VerificaSeEdicaoOuDelivery()
     }
+
 
     private fun VerificaSeEdicaoOuDelivery() {
         var dadosRecebidos = intent
@@ -74,27 +90,22 @@ class FormularioSolicitacaoDeliveryActivity : AppCompatActivity() {
                 data = DataUtils().dataAtualParaBanco()
             )
         if (ConnectionManagerUtils().checkInternetConnection(this) == 1) {
-            RepositoryPecaRoupa(this).solicitaPecaRoupaDelivery(pecaParaDelivery,
-                object : RepositoryPecaRoupa.CallBackRepositorypecaRoupa<PecaRoupa> {
-                    override fun quandoSucesso(dados: PecaRoupa) {
-                        ToastUtils().showCenterToastShort(
-                            this@FormularioSolicitacaoDeliveryActivity,
-                            "Salvo"
-                        )
+            viewModelPecaRoupa.salva(pecaParaDelivery).observe(
+                this, {
+                    if (it.erro == null) {
+                        ToastUtils().showCenterToastShort(this, "Salvo!")
                         finish()
-
+                    } else {
+                        it.erro?.let { erro -> ToastUtils().showCenterToastShort(this, erro) }
                     }
 
-                    override fun quandoFalha(erro: String) {
-                        ToastUtils().showCenterToastShort(
-                            this@FormularioSolicitacaoDeliveryActivity,
-                            "Falha ao salvar:  $erro"
-                        )
-                    }
-
-                })
+                }
+            )
         } else {
-            ToastUtils().showCenterToastShort(this, this.getString(R.string.mensagen_conectese_a_rede))
+            ToastUtils().showCenterToastShort(
+                this,
+                this.getString(R.string.mensagen_conectese_a_rede)
+            )
         }
 
     }
@@ -109,26 +120,24 @@ class FormularioSolicitacaoDeliveryActivity : AppCompatActivity() {
         if (ConnectionManagerUtils().checkInternetConnection(this) == 1) {
             val nomePecaEditado: String = editTextNomePeca.text.toString()
             pecaRoupa.nome = nomePecaEditado
-            RepositoryPecaRoupa(this).editaPecaRoupa(
-                pecaRoupa,
-                object : RepositoryPecaRoupa.CallBackRepositorypecaRoupa<PecaRoupa> {
-                    override fun quandoSucesso(dados: PecaRoupa) {
+
+            viewModelPecaRoupa.edita(pecaRoupa).observe(this,
+                {
+                    if (it.erro == null) {
                         ToastUtils().showCenterToastShort(
                             this@FormularioSolicitacaoDeliveryActivity,
-                            "Nome Alterado: ${dados.nome}"
+                            "Nome Alterado: ${it.dados?.nome}"
                         )
                         finish()
-
-                    }
-
-                    override fun quandoFalha(erro: String) {
+                    } else {
                         ToastUtils().showCenterToastShort(
                             this@FormularioSolicitacaoDeliveryActivity,
-                            "Falha ao editar: $erro"
+                            "${it.erro}"
                         )
                     }
+                }
+            )
 
-                })
         } else {
             ToastUtils().showCenterToastShort(this, getString(R.string.mensagen_conectese_a_rede))
         }
