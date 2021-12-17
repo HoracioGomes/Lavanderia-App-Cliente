@@ -7,18 +7,18 @@ import com.example.lavanderia_cliente.model.PecaRoupa
 class BuscaPecasRoupaTask(
     var pecaRoupaDao: PecaRoupaDao,
     var listener: ListenerBuscaPecasRoupa
-) : AsyncTask<Void, Void, MutableList<PecaRoupa>>() {
-    override fun doInBackground(vararg params: Void?): MutableList<PecaRoupa> {
-        return pecaRoupaDao.todas()
+) : AsyncTask<Void, Void, Long >() {
+    override fun doInBackground(vararg params: Void?): Long {
+        return 0
     }
 
-    override fun onPostExecute(result: MutableList<PecaRoupa>?) {
+    override fun onPostExecute(result: Long) {
         super.onPostExecute(result)
         listener.retorno(result)
     }
 
     public interface ListenerBuscaPecasRoupa {
-        fun retorno(pecasRoupasRetornadas: MutableList<PecaRoupa>?)
+        fun retorno(pecasRoupasRetornadas: Long)
 
     }
 }

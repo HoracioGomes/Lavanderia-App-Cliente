@@ -3,27 +3,15 @@ package com.example.lavanderia_cliente.asynctasks
 import android.os.AsyncTask
 
 class BaseAsyncTask<T>(
-    var listenerExecuta: ListenerBaseAsyncExecuta<T>,
-    var listenerFinaliza: ListenerBaseAsyncFinaliza<T>
+    val enquantoExecuta: () -> T,
+    val executado: (dados: T) -> Unit
 ) : AsyncTask<Void, Void, T>() {
 
-    override fun doInBackground(vararg params: Void?): T {
-
-        return listenerExecuta.executando()
-
-    }
+    override fun doInBackground(vararg params: Void?) = enquantoExecuta()
 
     override fun onPostExecute(result: T) {
         super.onPostExecute(result)
-        listenerFinaliza.finalizado(result)
-    }
-
-    interface ListenerBaseAsyncExecuta<T> {
-        fun executando(): T
-    }
-
-    interface ListenerBaseAsyncFinaliza<T> {
-        fun finalizado(result: T)
+        executado(result)
     }
 
 }
