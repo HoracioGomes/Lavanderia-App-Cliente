@@ -2,19 +2,16 @@ package com.example.lavanderia_cliente.ui.recyclerview.adapter
 
 import android.content.Context
 import android.content.Intent
-import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import android.widget.Toast
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.example.lavanderia_cliente.R
-import com.example.lavanderia_cliente.database.dao.PecaRoupaDao
 import com.example.lavanderia_cliente.model.PecaRoupa
-import com.example.lavanderia_cliente.repository.RepositoryPecaRoupa
 import com.example.lavanderia_cliente.ui.activity.FormularioSolicitacaoDeliveryActivity
-import com.example.lavanderia_cliente.ui.activity.LoginActivity
+import com.example.lavanderia_cliente.ui.viewmodel.PecaRoupaViewModel
 import com.example.lavanderia_cliente.utils.AlertDialogUtils
 import com.example.lavanderia_cliente.utils.ConnectionManagerUtils
 import com.example.lavanderia_cliente.utils.Constantes.Companion.EXTRA_PECA_PARA_EDICAO
@@ -24,10 +21,10 @@ import java.util.*
 
 class ListaRoupasAdapter(
     private val context: Context,
-    private val pecaRoupaDao: PecaRoupaDao
+    private val viewModelRoupa: PecaRoupaViewModel,
 ) : RecyclerView.Adapter<ListaRoupasAdapter.ListaRoupasViewHolder>() {
 
-    val pecasRoupas: MutableList<PecaRoupa>? = mutableListOf()
+    val pecasRoupas: MutableList<PecaRoupa> = mutableListOf()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListaRoupasViewHolder {
         var view =
@@ -58,30 +55,20 @@ class ListaRoupasAdapter(
     }
 
     fun atualiza() {
-        if (ConnectionManagerUtils().checkInternetConnection(context) == 1) {
-            pecasRoupas?.clear()
-            RepositoryPecaRoupa(context).buscaPecasRoupa(object :
-                RepositoryPecaRoupa.CallBackRepositorypecaRoupa<MutableList<PecaRoupa>> {
-                override fun quandoSucesso(dados: MutableList<PecaRoupa>) {
+
+        viewModelRoupa.buscaTodos()
+            .observe(context as LifecycleOwner, androidx.lifecycle.Observer {
+                it.dados?.let { dados ->
+                    pecasRoupas?.clear()
                     pecasRoupas?.addAll(dados)
                     pecasRoupas?.sortBy { pecaRoupa -> pecaRoupa.posicaoNaLista }
                     notifyDataSetChanged()
                 }
-
-                override fun quandoFalha(erro: String) {
-                    ToastUtils().showCenterToastShort(context, erro)
-                    val intent = Intent(context, LoginActivity::class.java)
-                    context.startActivity(intent)
+                it.erro?.let { erro ->
+                    ToastUtils().showCenterToastLong(context, "$erro")
                 }
             })
-        } else {
 
-            ToastUtils().showCenterToastShort(
-                context,
-                context.getString(R.string.mensagen_conectese_a_rede)
-            )
-
-        }
     }
 
 
@@ -93,22 +80,26 @@ class ListaRoupasAdapter(
                 override fun cliqueBotaoConfirma() {
                     if (ConnectionManagerUtils().checkInternetConnection(context) == 1) {
                         val spinner = ProgressBarUtils.mostraProgressBar(context)
-                        RepositoryPecaRoupa(context).deletaPecaRoupa(pecasRoupas?.get(position)?.id,
-                            object : RepositoryPecaRoupa.CallBackRepositorypecaRoupaSemBody {
-                                override fun quandoSucesso() {
-                                    atualiza()
-                                    spinner.dismiss()
-                                    ToastUtils().showCenterToastShort(
-                                        context,
-                                        context.getString(R.string.toast_cancelado)
-                                    )
-                                }
 
-                                override fun quandoFalha(erro: String) {
-                                    spinner.dismiss()
-                                    atualiza()
+                        viewModelRoupa.deleta(pecasRoupas?.get(position)?.id)
+                            .observe(
+                                context as LifecycleOwner, androidx.lifecycle.Observer {
+
+                                    if (it.erro == null) {
+                                        spinner.dismiss()
+                                        ToastUtils().showCenterToastShort(
+                                            context,
+                                            context.getString(R.string.toast_cancelado)
+                                        )
+                                    } else {
+                                        spinner.dismiss()
+                                        ToastUtils().showCenterToastShort(context, it.erro)
+                                        notifyDataSetChanged()
+                                    }
+
                                 }
-                            })
+                            )
+
                     } else {
                         ToastUtils().showCenterToastShort(
                             context,
@@ -140,23 +131,21 @@ class ListaRoupasAdapter(
             }
 
 
-            var pecasParaEdicao: MutableList<PecaRoupa?> =
-                mutableListOf(pecasRoupas?.get(posicaoInicial), pecasRoupas?.get(posicaoFinal))
+            var pecasParaEdicao: MutableList<PecaRoupa> =
+                mutableListOf(pecasRoupas[posicaoInicial], pecasRoupas[posicaoFinal])
 
-            RepositoryPecaRoupa(context).trocaPosicao(
-                pecasParaEdicao,
-                object : RepositoryPecaRoupa.CallBackRepositorypecaRoupaSemBody {
-                    override fun quandoSucesso() {
 
+            viewModelRoupa.trocaPosicoes(pecasParaEdicao)
+                .observe(context as LifecycleOwner, androidx.lifecycle.Observer {
+                    if (it.erro == null) {
                         Collections.swap(pecasRoupas, posicaoInicial, posicaoFinal)
                         notifyDataSetChanged()
+                    } else {
+                        ToastUtils().showCenterToastShort(context, it.erro)
+                        notifyDataSetChanged()
                     }
-
-                    override fun quandoFalha(erro: String) {
-                        atualiza()
-                    }
-
-                })
+                }
+                )
         } else {
             ToastUtils().showCenterToastShort(
                 context,
