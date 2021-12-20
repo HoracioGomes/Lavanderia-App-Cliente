@@ -62,7 +62,7 @@ class LoginActivity : AppCompatActivity() {
                 var spinner: Dialog = ProgressBarUtils.mostraProgressBar(context)
                 if (resposta.dados != null) {
                     spinner.dismiss()
-                    val intent = Intent(context, ListaRoupasActivity::class.java)
+                    val intent = Intent(context, MainActivity::class.java)
                     intent.putExtra(
                         getString(R.string.extra_cliente_logado),
                         resposta?.dados?.cliente
@@ -92,7 +92,7 @@ class LoginActivity : AppCompatActivity() {
                             context,
                             "${resposta?.dados.cliente.nome} foi logado!"
                         )
-                        val intent = Intent(context, ListaRoupasActivity::class.java)
+                        val intent = Intent(context, MainActivity::class.java)
                         intent.putExtra(
                             getString(R.string.extra_cliente_logado),
                             resposta.dados.cliente

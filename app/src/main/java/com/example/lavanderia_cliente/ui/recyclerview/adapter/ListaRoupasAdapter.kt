@@ -1,16 +1,17 @@
 package com.example.lavanderia_cliente.ui.recyclerview.adapter
 
 import android.content.Context
-import android.content.Intent
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.example.lavanderia_cliente.R
 import com.example.lavanderia_cliente.model.PecaRoupa
-import com.example.lavanderia_cliente.ui.activity.FormularioSolicitacaoDeliveryActivity
+import com.example.lavanderia_cliente.ui.fragment.FormularioDeliveryFragment
 import com.example.lavanderia_cliente.ui.viewmodel.PecaRoupaViewModel
 import com.example.lavanderia_cliente.utils.AlertDialogUtils
 import com.example.lavanderia_cliente.utils.ConnectionManagerUtils
@@ -22,6 +23,7 @@ import java.util.*
 class ListaRoupasAdapter(
     private val context: Context,
     private val viewModelRoupa: PecaRoupaViewModel,
+    private val fragmentTransaction: FragmentTransaction
 ) : RecyclerView.Adapter<ListaRoupasAdapter.ListaRoupasViewHolder>() {
 
     val pecasRoupas: MutableList<PecaRoupa> = mutableListOf()
@@ -35,14 +37,16 @@ class ListaRoupasAdapter(
     override fun onBindViewHolder(holder: ListaRoupasViewHolder, position: Int) {
         holder.vincula(pecasRoupas?.get(position))
         holder.itemView.setOnClickListener {
-            var editaNota = Intent(context, FormularioSolicitacaoDeliveryActivity::class.java)
 
-            editaNota.putExtra(
+            val formularioDeliveryFragment = FormularioDeliveryFragment()
+            val dados = Bundle()
+            dados.putSerializable(
                 EXTRA_PECA_PARA_EDICAO,
                 pecasRoupas?.get(holder.adapterPosition)
             )
-
-            context.startActivity(editaNota)
+            formularioDeliveryFragment.arguments = dados
+            fragmentTransaction.replace(R.id.activity_main_container, formularioDeliveryFragment)
+            fragmentTransaction.commit()
         }
     }
 

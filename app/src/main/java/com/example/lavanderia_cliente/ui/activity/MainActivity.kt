@@ -1,20 +1,20 @@
 package com.example.lavanderia_cliente.ui.activity
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.example.lavanderia_cliente.R
 import com.example.lavanderia_cliente.model.Cliente
 import com.example.lavanderia_cliente.model.Token
+import com.example.lavanderia_cliente.ui.fragment.FormularioDeliveryFragment
 import com.example.lavanderia_cliente.ui.fragment.ListaPecaRoupaFragment
 
-class ListaRoupasActivity() : AppCompatActivity() {
+class MainActivity() : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTitle(getString(R.string.titulo_bar_lista_roupas))
-        setContentView(R.layout.activity_lista_roupas_layout)
+        setContentView(R.layout.activity_main)
         if (intent.hasExtra(getString(R.string.extra_cliente_logado))) {
             ListaPecaRoupaFragment.cliente =
                 intent.getSerializableExtra(getString(R.string.extra_cliente_logado)) as Cliente
@@ -25,15 +25,19 @@ class ListaRoupasActivity() : AppCompatActivity() {
                 intent.getSerializableExtra(getString(R.string.extra_token_valido)) as Token
         }
 
+        geraFragmentInicial()
+    }
+
+    private fun geraFragmentInicial() {
+        val beginTransaction = supportFragmentManager.beginTransaction()
+        beginTransaction.replace(R.id.activity_main_container, ListaPecaRoupaFragment())
+        beginTransaction.commit()
     }
 
     private fun vaiParaFormulario() {
-        val vaiParaFormularioDelivery =
-            Intent(this, FormularioSolicitacaoDeliveryActivity::class.java)
-        startActivity(
-            vaiParaFormularioDelivery
-        )
-
+        val beginTransaction = supportFragmentManager.beginTransaction()
+        beginTransaction.replace(R.id.activity_main_container, FormularioDeliveryFragment())
+        beginTransaction.commit()
     }
 
     override fun onResume() {
@@ -47,11 +51,16 @@ class ListaRoupasActivity() : AppCompatActivity() {
                 vaiParaFormulario()
             }
         }
+
+        if (fragment is FormularioDeliveryFragment) {
+            fragment.quandoFinish = {
+                geraFragmentInicial()
+            }
+        }
     }
 
     override fun onBackPressed() {
         moveTaskToBack(true)
     }
-
 
 }

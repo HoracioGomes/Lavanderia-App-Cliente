@@ -7,7 +7,7 @@ import com.example.lavanderia_cliente.R
 
 class ToastUtils {
 
-    fun showCenterToastShort(context: Context, message: String) {
+    fun showCenterToastShort(context: Context?, message: String) {
         var toast = Toast.makeText(
             context,
             message,

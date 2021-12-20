@@ -8,7 +8,7 @@ import com.example.lavanderia_cliente.ui.recyclerview.adapter.ListaRoupasAdapter
 import com.example.lavanderia_cliente.utils.ConnectionManagerUtils
 import com.example.lavanderia_cliente.utils.ToastUtils
 
-class PecaRoupaItemTouchCallback(var context: Context, var adapter: ListaRoupasAdapter) :
+class PecaRoupaItemTouchCallback(var context: Context, var adapter: ListaRoupasAdapter?) :
     Callback() {
     private var dragFrom = -1
     private var dragTo = -1
@@ -50,7 +50,7 @@ class PecaRoupaItemTouchCallback(var context: Context, var adapter: ListaRoupasA
 
             ACTION_STATE_IDLE -> {
                 if (dragFrom != -1 && dragTo != -1 && dragFrom != dragTo) {
-                    adapter.trocaPosicaoNoAdapterEApi(dragFrom, dragTo)
+                    adapter?.trocaPosicaoNoAdapterEApi(dragFrom, dragTo)
                     dragFrom = -1
                     dragTo = -1
                 }
@@ -61,7 +61,7 @@ class PecaRoupaItemTouchCallback(var context: Context, var adapter: ListaRoupasA
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
 
         val position = viewHolder.adapterPosition
-        adapter.remove(position)
+        adapter?.remove(position)
 
     }
 

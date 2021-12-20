@@ -11,6 +11,7 @@ import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -39,7 +40,7 @@ import com.google.android.material.navigation.NavigationView
 
 class ListaPecaRoupaFragment : Fragment(), NavigationView.OnNavigationItemSelectedListener {
 
-    private lateinit var adapter: ListaRoupasAdapter
+    private var adapter: ListaRoupasAdapter? = null
     private lateinit var recyclerView: RecyclerView
     private lateinit var navigationView: NavigationView
     private lateinit var drawerLayout: DrawerLayout
@@ -66,6 +67,10 @@ class ListaPecaRoupaFragment : Fragment(), NavigationView.OnNavigationItemSelect
         val repository = RepositoryUsuario(clienteDao, tokenDao)
         val provider = ViewModelProviders.of(this, UsuarioViewModelFactory(repository))
         provider.get(UsuarioViewModel::class.java)
+    }
+
+    private val beginTransaction by lazy {
+        activity?.supportFragmentManager?.beginTransaction()
     }
 
     var quandoBtnFabClicado: () -> Unit = {}
@@ -101,7 +106,6 @@ class ListaPecaRoupaFragment : Fragment(), NavigationView.OnNavigationItemSelect
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
     }
 
     private fun configuraDrawerLayout(view: View) {
@@ -127,9 +131,9 @@ class ListaPecaRoupaFragment : Fragment(), NavigationView.OnNavigationItemSelect
 
     private fun inicializaAdapter(view: View, context: Context) {
         recyclerView = view.findViewById(R.id.lista_roupas_recyclerview)
-        adapter = ListaRoupasAdapter(context, viewModelListaRoupas)
+        adapter = beginTransaction?.let { ListaRoupasAdapter(context, viewModelListaRoupas, it) }
         recyclerView.adapter = adapter
-        adapter.atualiza()
+        adapter?.atualiza()
         configuraSwipe()
     }
 
@@ -141,7 +145,6 @@ class ListaPecaRoupaFragment : Fragment(), NavigationView.OnNavigationItemSelect
         }
         itemTouchHelper?.attachToRecyclerView(recyclerView)
     }
-
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
