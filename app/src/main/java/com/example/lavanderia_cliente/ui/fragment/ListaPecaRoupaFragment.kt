@@ -11,7 +11,6 @@ import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -69,10 +68,6 @@ class ListaPecaRoupaFragment : Fragment(), NavigationView.OnNavigationItemSelect
         provider.get(UsuarioViewModel::class.java)
     }
 
-    private val beginTransaction by lazy {
-        activity?.supportFragmentManager?.beginTransaction()
-    }
-
     var quandoBtnFabClicado: () -> Unit = {}
 
     companion object {
@@ -91,6 +86,7 @@ class ListaPecaRoupaFragment : Fragment(), NavigationView.OnNavigationItemSelect
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        activity?.title = getString(R.string.titulo_bar_lista_roupas)
         configuraDrawerLayout(view)
         context?.let { inicializaAdapter(view, it) }
         inicializaBtnFabDelivery(view)
@@ -131,7 +127,9 @@ class ListaPecaRoupaFragment : Fragment(), NavigationView.OnNavigationItemSelect
 
     private fun inicializaAdapter(view: View, context: Context) {
         recyclerView = view.findViewById(R.id.lista_roupas_recyclerview)
-        adapter = beginTransaction?.let { ListaRoupasAdapter(context, viewModelListaRoupas, it) }
+        adapter = ListaRoupasAdapter(context, viewModelListaRoupas,
+            activity?.supportFragmentManager
+        )
         recyclerView.adapter = adapter
         adapter?.atualiza()
         configuraSwipe()
@@ -191,9 +189,5 @@ class ListaPecaRoupaFragment : Fragment(), NavigationView.OnNavigationItemSelect
         }
         return true
     }
-
-// interface ListenerPecaRoupaFragment{
-//     fun quandoClicaFab()
-// }
 
 }

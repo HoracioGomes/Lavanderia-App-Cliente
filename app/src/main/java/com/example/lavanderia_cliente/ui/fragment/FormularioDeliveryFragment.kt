@@ -47,6 +47,7 @@ class FormularioDeliveryFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        activity?.title = getString(R.string.titulo_bar_formulario_solic_edicao)
         inicializacaoBotoes(view)
         inicializacaoEditTextNomePeca(view)
         VerificaSeEdicaoOuDelivery()
@@ -102,6 +103,7 @@ class FormularioDeliveryFragment : Fragment() {
             viewModelPecaRoupa.salva(pecaParaDelivery).observe(
                 context as LifecycleOwner, {
                     if (it.erro == null) {
+                        editTextNomePeca.text.clear()
                         ToastUtils().showCenterToastShort(
                             context,
                             "Salvo!"
@@ -139,6 +141,8 @@ class FormularioDeliveryFragment : Fragment() {
             viewModelPecaRoupa.edita(pecaRoupa).observe(context as LifecycleOwner,
                 {
                     if (it.erro == null) {
+                        arguments?.clear()
+                        editTextNomePeca.text.clear()
                         ToastUtils().showCenterToastShort(
                             context,
                             "Nome Alterado: ${it.dados?.nome}"

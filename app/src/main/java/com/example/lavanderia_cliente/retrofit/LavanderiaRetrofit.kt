@@ -12,7 +12,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 class LavanderiaRetrofit {
 
     companion object {
-        var baseUrl = "http://192.168.100.64:3333/"
+        var baseUrl = "http://url.here/"
     }
 
 
