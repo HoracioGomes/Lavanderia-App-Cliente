@@ -5,15 +5,15 @@
     android:id="@+id/activity_lista_roupas_drawer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".ui.activity.ListaRoupasActivity">
+    android:orientation="vertical">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/activity_lista_roupas_recyclerview"
+            android:id="@+id/lista_roupas_recyclerview"
             android:layout_width="0dp"
             android:layout_height="0dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
@@ -25,17 +25,17 @@
 
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/activity_lista_roupas_fab_suportet"
+            android:id="@+id/lista_roupas_fab_suportet"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
             android:backgroundTint="@color/colorPrimaryVariant"
             android:src="@drawable/ic_support"
-            app:layout_constraintBottom_toTopOf="@id/activity_lista_roupas_fab_delivery"
+            app:layout_constraintBottom_toTopOf="@id/lista_roupas_fab_delivery"
             app:layout_constraintEnd_toEndOf="parent" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/activity_lista_roupas_fab_delivery"
+            android:id="@+id/lista_roupas_fab_delivery"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
@@ -48,7 +48,7 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.navigation.NavigationView
-        android:id="@+id/activity_lista_roupas_nav_view"
+        android:id="@+id/lista_roupas_nav_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start|left"

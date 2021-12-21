@@ -27,7 +27,7 @@
             android:name=".ui.activity.LoginActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity android:name=".ui.activity.FormularioSolicitacaoDeliveryActivity" />
-        <activity android:name=".ui.activity.ListaRoupasActivity" />
+        <activity android:name=".ui.activity.MainActivity" />
     </application>
 
 </manifest><!--        android:name=".LavanderiaApplication"-->

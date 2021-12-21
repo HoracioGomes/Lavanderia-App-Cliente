@@ -9,9 +9,9 @@ class ConnectionManagerUtils {
     var NETWORK_STATUS_NOT_CONNECTED = 0
     var NETWORK_STATUS_CONNECTED = 1
 
-    fun checkInternetConnection(context: Context): Int {
+    fun checkInternetConnection(context: Context?): Int {
         val cm =
-            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            context?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
         return if ( cm.activeNetworkInfo != null && cm.activeNetworkInfo!!.isAvailable
             && cm.activeNetworkInfo!!.isConnected

@@ -1,11 +1,13 @@
-package com.example.lavanderia_cliente.ui.activity
+package com.example.lavanderia_cliente.ui.fragment
 
-import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
-import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProviders
 import com.example.lavanderia_cliente.R
 import com.example.lavanderia_cliente.database.LavanderiaDatabase
@@ -15,42 +17,49 @@ import com.example.lavanderia_cliente.repository.RepositoryPecaRoupa
 import com.example.lavanderia_cliente.ui.viewmodel.PecaRoupaViewModel
 import com.example.lavanderia_cliente.ui.viewmodel.factory.PecaRoupaViewModelFactory
 import com.example.lavanderia_cliente.utils.ConnectionManagerUtils
-import com.example.lavanderia_cliente.utils.Constantes.Companion.EXTRA_PECA_PARA_EDICAO
+import com.example.lavanderia_cliente.utils.Constantes
 import com.example.lavanderia_cliente.utils.DataUtils
 import com.example.lavanderia_cliente.utils.ToastUtils
-import java.util.*
 
-class FormularioSolicitacaoDeliveryActivity : AppCompatActivity() {
+class FormularioDeliveryFragment : Fragment() {
     private lateinit var editTextNomePeca: EditText
     private lateinit var buttonSolicitarDelivery: Button
     private lateinit var buttonEditaPeca: Button
-
     private val pecaRoupaDao: PecaRoupaDao by lazy {
-        LavanderiaDatabase.getAppDatabase(this).getPecaRoupaDao()
+        LavanderiaDatabase.getAppDatabase(context).getPecaRoupaDao()
     }
 
     private val viewModelPecaRoupa by lazy {
-        val repositoryPecaRoupa: RepositoryPecaRoupa = RepositoryPecaRoupa(pecaRoupaDao)
+        val repositoryPecaRoupa = RepositoryPecaRoupa(pecaRoupaDao)
         val provider = ViewModelProviders.of(this, PecaRoupaViewModelFactory(repositoryPecaRoupa))
         provider.get(PecaRoupaViewModel::class.java)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_formulario_solicitacao_delivery_layout)
-        setTitle(getString(R.string.titulo_bar_formulario_solic_edicao))
-        inicializacaoBotoes()
-        inicializacaoEditTextNomePeca()
+    var quandoFinish: () -> Unit = {}
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.formulario_delivery_fragment, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        activity?.title = getString(R.string.titulo_bar_formulario_solic_edicao)
+        inicializacaoBotoes(view)
+        inicializacaoEditTextNomePeca(view)
         VerificaSeEdicaoOuDelivery()
     }
 
 
     private fun VerificaSeEdicaoOuDelivery() {
-        var dadosRecebidos = intent
+        var dadosRecebidos = arguments
         if (condicaoParaEdicao(dadosRecebidos)) {
             buttonEditaPeca.visibility = View.VISIBLE
             val pecaParaEdicao: PecaRoupa =
-                dadosRecebidos.extras?.getSerializable(EXTRA_PECA_PARA_EDICAO) as PecaRoupa
+                dadosRecebidos?.getSerializable(Constantes.EXTRA_PECA_PARA_EDICAO) as PecaRoupa
             editTextNomePeca.setText(pecaParaEdicao.nome)
             cliqueBotaoEdita(pecaParaEdicao)
         } else {
@@ -59,20 +68,21 @@ class FormularioSolicitacaoDeliveryActivity : AppCompatActivity() {
         }
     }
 
-    private fun condicaoParaEdicao(dadosRecebidos: Intent) =
-        dadosRecebidos.hasExtra(EXTRA_PECA_PARA_EDICAO)
-
-
-    private fun inicializacaoEditTextNomePeca() {
-        editTextNomePeca =
-            findViewById(R.id.activity_formulario_edittext_nome_peca)
+    private fun condicaoParaEdicao(dadosRecebidos: Bundle?): Boolean {
+        return dadosRecebidos?.getSerializable(Constantes.EXTRA_PECA_PARA_EDICAO) != null
     }
 
 
-    private fun inicializacaoBotoes() {
+    private fun inicializacaoEditTextNomePeca(view: View) {
+        editTextNomePeca =
+            view?.findViewById(R.id.activity_formulario_edittext_nome_peca)
+    }
+
+
+    private fun inicializacaoBotoes(view: View) {
         buttonSolicitarDelivery =
-            findViewById(R.id.activity_formulario_button_solicitar_coleta)
-        buttonEditaPeca = findViewById(R.id.activity_formulario_button_edita_peca)
+            view.findViewById(R.id.activity_formulario_button_solicitar_coleta)
+        buttonEditaPeca = view.findViewById(R.id.activity_formulario_button_edita_peca)
     }
 
     private fun cliqueBotaoDelivery() {
@@ -89,21 +99,28 @@ class FormularioSolicitacaoDeliveryActivity : AppCompatActivity() {
                 status = getString(R.string.status_esperando_coleta),
                 data = DataUtils().dataAtualParaBanco()
             )
-        if (ConnectionManagerUtils().checkInternetConnection(this) == 1) {
+        if (ConnectionManagerUtils().checkInternetConnection(context) == 1) {
             viewModelPecaRoupa.salva(pecaParaDelivery).observe(
-                this, {
+                context as LifecycleOwner, {
                     if (it.erro == null) {
-                        ToastUtils().showCenterToastShort(this, "Salvo!")
-                        finish()
+                        editTextNomePeca.text.clear()
+                        ToastUtils().showCenterToastShort(
+                            context,
+                            "Salvo!"
+                        )
+                        quandoFinish()
                     } else {
-                        it.erro?.let { erro -> ToastUtils().showCenterToastShort(this, erro) }
+                        ToastUtils().showCenterToastShort(
+                            context,
+                            "${it.erro}"
+                        )
                     }
 
                 }
             )
         } else {
             ToastUtils().showCenterToastShort(
-                this,
+                context,
                 this.getString(R.string.mensagen_conectese_a_rede)
             )
         }
@@ -117,21 +134,23 @@ class FormularioSolicitacaoDeliveryActivity : AppCompatActivity() {
     }
 
     private fun editaPecaRoupa(pecaRoupa: PecaRoupa) {
-        if (ConnectionManagerUtils().checkInternetConnection(this) == 1) {
+        if (ConnectionManagerUtils().checkInternetConnection(context) == 1) {
             val nomePecaEditado: String = editTextNomePeca.text.toString()
             pecaRoupa.nome = nomePecaEditado
 
-            viewModelPecaRoupa.edita(pecaRoupa).observe(this,
+            viewModelPecaRoupa.edita(pecaRoupa).observe(context as LifecycleOwner,
                 {
                     if (it.erro == null) {
+                        arguments?.clear()
+                        editTextNomePeca.text.clear()
                         ToastUtils().showCenterToastShort(
-                            this@FormularioSolicitacaoDeliveryActivity,
+                            context,
                             "Nome Alterado: ${it.dados?.nome}"
                         )
-                        finish()
+                        quandoFinish()
                     } else {
                         ToastUtils().showCenterToastShort(
-                            this@FormularioSolicitacaoDeliveryActivity,
+                            context,
                             "${it.erro}"
                         )
                     }
@@ -139,13 +158,12 @@ class FormularioSolicitacaoDeliveryActivity : AppCompatActivity() {
             )
 
         } else {
-            ToastUtils().showCenterToastShort(this, getString(R.string.mensagen_conectese_a_rede))
+            ToastUtils().showCenterToastShort(
+                context,
+                getString(R.string.mensagen_conectese_a_rede)
+            )
         }
     }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
-        finish()
-    }
 
 }
