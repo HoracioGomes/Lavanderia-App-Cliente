@@ -60,7 +60,7 @@ class PecaRoupaWebClient(private val pecaRoupaService: PecaRoupaService = Lavand
     }
 
     fun editaPeca(
-        pecaRoupa: PecaRoupa,
+        pecaRoupa: PecaRoupa?,
         quandoSucesso: (pecaRoupa: PecaRoupa?) -> Unit,
         quandoFalha: (erro: String?) -> Unit
     ) {

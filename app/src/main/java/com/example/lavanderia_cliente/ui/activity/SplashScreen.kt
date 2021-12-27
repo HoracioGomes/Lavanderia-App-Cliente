@@ -7,6 +7,8 @@ import android.view.WindowManager
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import com.example.lavanderia_cliente.R
 
 class SplashScreen : AppCompatActivity() {
@@ -20,12 +22,14 @@ class SplashScreen : AppCompatActivity() {
         )
 
         animaIcone()
-
         Handler().postDelayed({
-            val intent = Intent(this, LoginActivity::class.java)
+            val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
+            finish()
         }, 3000)
+
     }
+
 
     private fun animaIcone() {
         val iconeSplashScreen = findViewById<ImageView>(R.id.splash_screen_icon)

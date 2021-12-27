@@ -1,31 +1,30 @@
 package com.example.lavanderia_cliente.ui.recyclerview.adapter
 
-import android.app.Activity
 import android.content.Context
-import android.content.res.Configuration
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LifecycleOwner
+import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.lavanderia_cliente.R
 import com.example.lavanderia_cliente.model.PecaRoupa
 import com.example.lavanderia_cliente.ui.activity.MainActivity
 import com.example.lavanderia_cliente.ui.fragment.FormularioDeliveryFragment
+import com.example.lavanderia_cliente.ui.fragment.ListaPecaRoupaFragmentDirections
 import com.example.lavanderia_cliente.ui.viewmodel.PecaRoupaViewModel
 import com.example.lavanderia_cliente.utils.*
 import com.example.lavanderia_cliente.utils.Constantes.Companion.EXTRA_PECA_PARA_EDICAO
-import com.example.lavanderia_cliente.utils.Constantes.Companion.TAG_FRAGMENT_FORMULARIO
 import java.util.*
 
 class ListaRoupasAdapter(
     private val context: Context,
     private val viewModelRoupa: PecaRoupaViewModel,
-    private val fragmentManager: FragmentManager?
+    private val navController: NavController
 ) : RecyclerView.Adapter<ListaRoupasAdapter.ListaRoupasViewHolder>() {
 
     val pecasRoupas: MutableList<PecaRoupa> = mutableListOf()
@@ -44,33 +43,39 @@ class ListaRoupasAdapter(
     }
 
     private fun vaiParaEdicaoNoFormulario(holder: ListaRoupasViewHolder) {
-        val formularioDeliveryFragment = FormularioDeliveryFragment()
-        val dados = Bundle()
-        dados.putSerializable(
-            EXTRA_PECA_PARA_EDICAO,
-            pecasRoupas?.get(holder.adapterPosition)
-        )
-        formularioDeliveryFragment.arguments = dados
+//        val formularioDeliveryFragment = FormularioDeliveryFragment()
+//        val dados = Bundle()
+//        dados.putSerializable(
+//            EXTRA_PECA_PARA_EDICAO,
+//            pecasRoupas?.get(holder.adapterPosition)
+//        )
+//        formularioDeliveryFragment.arguments = dados
 
-        if(context is MainActivity){
-
+        if (context is MainActivity) {
             val mainActivity = context
 
-            val container =
-                if (mainActivity.findViewById<FrameLayout>(R.id.activity_main_container_secundario) != null) {
-                    R.id.activity_main_container_secundario
-                } else {
-                    R.id.activity_main_container_primario
-                }
+//            val container =
+//                if (mainActivity.findViewById<FrameLayout>(R.id.activity_main_container_secundario) != null) {
+//                    R.id.activity_main_container_secundario
+//                } else {
+//                    R.id.activity_main_container_primario
+//                }
+            val pecaParaEdicao = pecasRoupas[holder.adapterPosition]
+            val actionListaPecasRoupasToFormularioDeliveryComPecaEdicao =
+                ListaPecaRoupaFragmentDirections.actionListaPecasRoupasToFormularioDelivery(
+                    pecaParaEdicao
+                )
+            navController.navigate(actionListaPecasRoupasToFormularioDeliveryComPecaEdicao)
 
-            val transaction = fragmentManager?.beginTransaction()
 
-            transaction?.replace(
-                container,
-                formularioDeliveryFragment,
-                Constantes.TAG_FRAGMENT_FORMULARIO
-            )
-            transaction?.commit()
+//            val transaction = fragmentManager?.beginTransaction()
+//
+//            transaction?.replace(
+//                container,
+//                formularioDeliveryFragment,
+//                Constantes.TAG_FRAGMENT_FORMULARIO
+//            )
+//            transaction?.commit()
         }
     }
 
