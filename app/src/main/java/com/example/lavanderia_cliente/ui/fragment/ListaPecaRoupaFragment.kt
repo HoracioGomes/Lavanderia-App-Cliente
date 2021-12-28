@@ -17,8 +17,10 @@ import com.example.lavanderia_cliente.R
 import com.example.lavanderia_cliente.ui.activity.MainActivity.Companion.cliente
 import com.example.lavanderia_cliente.ui.activity.MainActivity.Companion.mToogle
 import com.example.lavanderia_cliente.ui.activity.MainActivity.Companion.token
+import com.example.lavanderia_cliente.ui.activity.MainActivity.Companion.viewModelEstado
 import com.example.lavanderia_cliente.ui.activity.callback.PecaRoupaItemTouchCallback
 import com.example.lavanderia_cliente.ui.recyclerview.adapter.ListaRoupasAdapter
+import com.example.lavanderia_cliente.ui.viewmodel.ComponetesVisuais
 import com.example.lavanderia_cliente.utils.AlertDialogUtils
 import com.example.lavanderia_cliente.utils.ToastUtils
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -31,6 +33,8 @@ class ListaPecaRoupaFragment : BaseFragment(), NavigationView.OnNavigationItemSe
     private lateinit var navigationView: NavigationView
     private lateinit var drawerLayout: DrawerLayout
 
+    //Koin
+//    private val viewModelEstado: EstadoAppViewModel by sharedViewModel()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,6 +46,7 @@ class ListaPecaRoupaFragment : BaseFragment(), NavigationView.OnNavigationItemSe
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewModelEstado.temComponentes = ComponetesVisuais(appBar = true, bottomNavigation = true)
         configuraDrawerLayout(view)
         context?.let { inicializaAdapter(view, it) }
         inicializaBtnFabDelivery(view)

@@ -12,6 +12,8 @@ import androidx.lifecycle.Observer
 import com.example.lavanderia_cliente.R
 import com.example.lavanderia_cliente.ui.activity.MainActivity.Companion.cliente
 import com.example.lavanderia_cliente.ui.activity.MainActivity.Companion.token
+import com.example.lavanderia_cliente.ui.activity.MainActivity.Companion.viewModelEstado
+import com.example.lavanderia_cliente.ui.viewmodel.ComponetesVisuais
 import com.example.lavanderia_cliente.utils.ConnectionManagerUtils
 import com.example.lavanderia_cliente.utils.ProgressBarUtils
 import com.example.lavanderia_cliente.utils.ToastUtils
@@ -29,7 +31,7 @@ class LoginFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        viewModelEstado.temComponentes = ComponetesVisuais()
         val edtTxtEmail = view.findViewById<TextInputEditText>(R.id.edttext_email_login)
         val edtTxtSenha = view.findViewById<TextInputEditText>(R.id.edttext_senha_login)
         val buttonLogar = view.findViewById<Button>(R.id.button_logar)

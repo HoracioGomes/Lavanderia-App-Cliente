@@ -10,6 +10,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.fragment.navArgs
 import com.example.lavanderia_cliente.R
 import com.example.lavanderia_cliente.model.PecaRoupa
+import com.example.lavanderia_cliente.ui.activity.MainActivity.Companion.viewModelEstado
+import com.example.lavanderia_cliente.ui.viewmodel.ComponetesVisuais
 import com.example.lavanderia_cliente.utils.ConnectionManagerUtils
 import com.example.lavanderia_cliente.utils.DataUtils
 import com.example.lavanderia_cliente.utils.ToastUtils
@@ -31,6 +33,7 @@ class FormularioDeliveryFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewModelEstado.temComponentes = ComponetesVisuais(appBar = true, bottomNavigation = true)
         inicializacaoBotoes(view)
         inicializacaoEditTextNomePeca(view)
         VerificaSeEdicaoOuDelivery()
