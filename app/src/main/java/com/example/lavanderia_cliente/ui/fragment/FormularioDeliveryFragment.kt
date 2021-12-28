@@ -6,36 +6,22 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.fragment.navArgs
 import com.example.lavanderia_cliente.R
-import com.example.lavanderia_cliente.database.LavanderiaDatabase
-import com.example.lavanderia_cliente.database.dao.PecaRoupaDao
 import com.example.lavanderia_cliente.model.PecaRoupa
-import com.example.lavanderia_cliente.repository.RepositoryPecaRoupa
-import com.example.lavanderia_cliente.ui.viewmodel.PecaRoupaViewModel
-import com.example.lavanderia_cliente.ui.viewmodel.factory.PecaRoupaViewModelFactory
+import com.example.lavanderia_cliente.ui.activity.MainActivity.Companion.viewModelEstado
+import com.example.lavanderia_cliente.ui.viewmodel.ComponetesVisuais
 import com.example.lavanderia_cliente.utils.ConnectionManagerUtils
-import com.example.lavanderia_cliente.utils.Constantes
 import com.example.lavanderia_cliente.utils.DataUtils
 import com.example.lavanderia_cliente.utils.ToastUtils
 
-class FormularioDeliveryFragment : Fragment() {
+class FormularioDeliveryFragment : BaseFragment() {
     private lateinit var editTextNomePeca: EditText
     private lateinit var buttonSolicitarDelivery: Button
     private lateinit var buttonEditaPeca: Button
-    private val pecaRoupaDao: PecaRoupaDao by lazy {
-        LavanderiaDatabase.getAppDatabase(context).getPecaRoupaDao()
-    }
 
-    private val viewModelPecaRoupa by lazy {
-        val repositoryPecaRoupa = RepositoryPecaRoupa(pecaRoupaDao)
-        val provider = ViewModelProviders.of(this, PecaRoupaViewModelFactory(repositoryPecaRoupa))
-        provider.get(PecaRoupaViewModel::class.java)
-    }
-
-    var quandoFinish: () -> Unit = {}
+    private val argumentos = navArgs<FormularioDeliveryFragmentArgs>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,7 +33,7 @@ class FormularioDeliveryFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        activity?.title = getString(R.string.titulo_bar_formulario_solic_edicao)
+        viewModelEstado.temComponentes = ComponetesVisuais(appBar = true, bottomNavigation = true)
         inicializacaoBotoes(view)
         inicializacaoEditTextNomePeca(view)
         VerificaSeEdicaoOuDelivery()
@@ -55,21 +41,21 @@ class FormularioDeliveryFragment : Fragment() {
 
 
     private fun VerificaSeEdicaoOuDelivery() {
-        var dadosRecebidos = arguments
-        if (condicaoParaEdicao(dadosRecebidos)) {
+
+        if (condicaoParaEdicao()) {
+            val pecaRoupaEdicao = argumentos.value.pecaEdicao
             buttonEditaPeca.visibility = View.VISIBLE
-            val pecaParaEdicao: PecaRoupa =
-                dadosRecebidos?.getSerializable(Constantes.EXTRA_PECA_PARA_EDICAO) as PecaRoupa
-            editTextNomePeca.setText(pecaParaEdicao.nome)
-            cliqueBotaoEdita(pecaParaEdicao)
+            editTextNomePeca.setText(pecaRoupaEdicao?.nome)
+            cliqueBotaoEdita(pecaRoupaEdicao)
         } else {
             buttonSolicitarDelivery.visibility = View.VISIBLE
             cliqueBotaoDelivery()
         }
     }
 
-    private fun condicaoParaEdicao(dadosRecebidos: Bundle?): Boolean {
-        return dadosRecebidos?.getSerializable(Constantes.EXTRA_PECA_PARA_EDICAO) != null
+    private fun condicaoParaEdicao(): Boolean {
+
+        return argumentos.value.pecaEdicao != null
     }
 
 
@@ -108,7 +94,7 @@ class FormularioDeliveryFragment : Fragment() {
                             context,
                             "Salvo!"
                         )
-                        quandoFinish()
+                        vaiParaListaRoupas()
                     } else {
                         ToastUtils().showCenterToastShort(
                             context,
@@ -127,16 +113,17 @@ class FormularioDeliveryFragment : Fragment() {
 
     }
 
-    private fun cliqueBotaoEdita(pecaRoupa: PecaRoupa) {
+
+    private fun cliqueBotaoEdita(pecaRoupa: PecaRoupa?) {
         buttonEditaPeca.setOnClickListener {
             editaPecaRoupa(pecaRoupa)
         }
     }
 
-    private fun editaPecaRoupa(pecaRoupa: PecaRoupa) {
+    private fun editaPecaRoupa(pecaRoupa: PecaRoupa?) {
         if (ConnectionManagerUtils().checkInternetConnection(context) == 1) {
             val nomePecaEditado: String = editTextNomePeca.text.toString()
-            pecaRoupa.nome = nomePecaEditado
+            pecaRoupa?.nome = nomePecaEditado
 
             viewModelPecaRoupa.edita(pecaRoupa).observe(context as LifecycleOwner,
                 {
@@ -147,7 +134,7 @@ class FormularioDeliveryFragment : Fragment() {
                             context,
                             "Nome Alterado: ${it.dados?.nome}"
                         )
-                        quandoFinish()
+                        vaiParaListaRoupas()
                     } else {
                         ToastUtils().showCenterToastShort(
                             context,
@@ -165,5 +152,10 @@ class FormularioDeliveryFragment : Fragment() {
         }
     }
 
+    private fun vaiParaListaRoupas() {
+        val action =
+            FormularioDeliveryFragmentDirections.actionFormularioDeliveryToListaPecasRoupas()
+        navControler.navigate(action)
+    }
 
 }

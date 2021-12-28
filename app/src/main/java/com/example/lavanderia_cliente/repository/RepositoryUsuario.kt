@@ -1,15 +1,11 @@
 package com.example.lavanderia_cliente.repository
 
-import android.os.AsyncTask
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.lavanderia_cliente.asynctasks.BaseAsyncTask
 import com.example.lavanderia_cliente.database.dao.ClienteDao
 import com.example.lavanderia_cliente.database.dao.TokenDao
 import com.example.lavanderia_cliente.model.Token
-import com.example.lavanderia_cliente.retrofit.LavanderiaRetrofit
-import com.example.lavanderia_cliente.retrofit.callbacks.BaseCallback
 import com.example.lavanderia_cliente.retrofit.responses.LoginResponse
 import com.example.lavanderia_cliente.retrofit.webclient.UsuarioWebClient
 
@@ -65,7 +61,6 @@ class RepositoryUsuario(
     }
 
     fun loginAutomatico(): LiveData<Resource<LoginResponse?>> {
-
         val resourceLoginAutomatico = MutableLiveData<Resource<LoginResponse?>>()
         var dadosLogin: LoginResponse? = null
 
@@ -83,6 +78,9 @@ class RepositoryUsuario(
             executado = {
                 if (dadosLogin != null) {
                     resourceLoginAutomatico.value = Resource(dados = dadosLogin)
+                } else {
+                    resourceLoginAutomatico.value = Resource(dados = null)
+
                 }
             }
         ).execute()
