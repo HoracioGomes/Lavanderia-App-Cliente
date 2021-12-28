@@ -16,7 +16,7 @@ class PecaRoupaViewModel(private val repository: RepositoryPecaRoupa) : ViewMode
         return repository.salvaPecaRoupa(pecaRopa)
     }
 
-    fun edita(pecaRoupa: PecaRoupa): LiveData<Resource<PecaRoupa?>> {
+    fun edita(pecaRoupa: PecaRoupa?): LiveData<Resource<PecaRoupa?>> {
         return repository.editaPecaRoupa(pecaRoupa)
     }
 

@@ -1,7 +1,7 @@
 package com.example.lavanderia_cliente.retrofit
 
 
-import com.example.lavanderia_cliente.ui.fragment.ListaPecaRoupaFragment.Companion.token
+import com.example.lavanderia_cliente.ui.activity.MainActivity.Companion.token
 import okhttp3.Interceptor
 import okhttp3.Response
 

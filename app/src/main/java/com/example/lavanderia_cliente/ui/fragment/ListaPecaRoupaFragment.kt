@@ -1,7 +1,6 @@
 package com.example.lavanderia_cliente.ui.fragment
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -10,71 +9,32 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.lavanderia_cliente.R
-import com.example.lavanderia_cliente.database.LavanderiaDatabase
-import com.example.lavanderia_cliente.database.dao.ClienteDao
-import com.example.lavanderia_cliente.database.dao.PecaRoupaDao
-import com.example.lavanderia_cliente.database.dao.TokenDao
-import com.example.lavanderia_cliente.model.Cliente
-import com.example.lavanderia_cliente.model.Token
-import com.example.lavanderia_cliente.repository.RepositoryPecaRoupa
-import com.example.lavanderia_cliente.repository.RepositoryUsuario
-import com.example.lavanderia_cliente.ui.activity.LoginActivity
+import com.example.lavanderia_cliente.ui.activity.MainActivity.Companion.cliente
+import com.example.lavanderia_cliente.ui.activity.MainActivity.Companion.mToogle
+import com.example.lavanderia_cliente.ui.activity.MainActivity.Companion.token
+import com.example.lavanderia_cliente.ui.activity.MainActivity.Companion.viewModelEstado
 import com.example.lavanderia_cliente.ui.activity.callback.PecaRoupaItemTouchCallback
 import com.example.lavanderia_cliente.ui.recyclerview.adapter.ListaRoupasAdapter
-import com.example.lavanderia_cliente.ui.viewmodel.PecaRoupaViewModel
-import com.example.lavanderia_cliente.ui.viewmodel.UsuarioViewModel
-import com.example.lavanderia_cliente.ui.viewmodel.factory.PecaRoupaViewModelFactory
-import com.example.lavanderia_cliente.ui.viewmodel.factory.UsuarioViewModelFactory
+import com.example.lavanderia_cliente.ui.viewmodel.ComponetesVisuais
 import com.example.lavanderia_cliente.utils.AlertDialogUtils
 import com.example.lavanderia_cliente.utils.ToastUtils
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 
-class ListaPecaRoupaFragment : Fragment(), NavigationView.OnNavigationItemSelectedListener {
+class ListaPecaRoupaFragment : BaseFragment(), NavigationView.OnNavigationItemSelectedListener {
 
     private var adapter: ListaRoupasAdapter? = null
     private lateinit var recyclerView: RecyclerView
     private lateinit var navigationView: NavigationView
     private lateinit var drawerLayout: DrawerLayout
 
-    private val pecaRoupaDao: PecaRoupaDao by lazy {
-        LavanderiaDatabase.getAppDatabase(context).getPecaRoupaDao()
-    }
-
-    private val clienteDao: ClienteDao by lazy {
-        LavanderiaDatabase.getAppDatabase(context).getClienteDao()
-    }
-
-    private val tokenDao: TokenDao by lazy {
-        LavanderiaDatabase.getAppDatabase(context).getTokenDao()
-    }
-
-    private val viewModelListaRoupas by lazy {
-        val repository = RepositoryPecaRoupa(pecaRoupaDao)
-        val provider = ViewModelProviders.of(this, PecaRoupaViewModelFactory(repository))
-        provider.get(PecaRoupaViewModel::class.java)
-    }
-
-    private val viewModelUsuario by lazy {
-        val repository = RepositoryUsuario(clienteDao, tokenDao)
-        val provider = ViewModelProviders.of(this, UsuarioViewModelFactory(repository))
-        provider.get(UsuarioViewModel::class.java)
-    }
-
-    var quandoBtnFabClicado: () -> Unit = {}
-
-    companion object {
-        var cliente: Cliente? = null
-        var token: Token? = null
-        lateinit var mToogle: ActionBarDrawerToggle
-    }
+    //Koin
+//    private val viewModelEstado: EstadoAppViewModel by sharedViewModel()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -86,7 +46,7 @@ class ListaPecaRoupaFragment : Fragment(), NavigationView.OnNavigationItemSelect
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        activity?.title = getString(R.string.titulo_bar_lista_roupas)
+        viewModelEstado.temComponentes = ComponetesVisuais(appBar = true, bottomNavigation = true)
         configuraDrawerLayout(view)
         context?.let { inicializaAdapter(view, it) }
         inicializaBtnFabDelivery(view)
@@ -96,12 +56,15 @@ class ListaPecaRoupaFragment : Fragment(), NavigationView.OnNavigationItemSelect
         val btnFabSolicitacaoDelivery =
             view.findViewById<FloatingActionButton>(R.id.lista_roupas_fab_delivery)
         btnFabSolicitacaoDelivery.setOnClickListener {
-            quandoBtnFabClicado()
+            vaiParaFormulario()
+
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    private fun vaiParaFormulario() {
+        val acttion =
+            ListaPecaRoupaFragmentDirections.actionListaPecasRoupasToFormularioDelivery()
+        navControler.navigate(acttion)
     }
 
     private fun configuraDrawerLayout(view: View) {
@@ -127,8 +90,9 @@ class ListaPecaRoupaFragment : Fragment(), NavigationView.OnNavigationItemSelect
 
     private fun inicializaAdapter(view: View, context: Context) {
         recyclerView = view.findViewById(R.id.lista_roupas_recyclerview)
-        adapter = ListaRoupasAdapter(context, viewModelListaRoupas,
-            activity?.supportFragmentManager
+        adapter = ListaRoupasAdapter(
+            context, viewModelPecaRoupa,
+            navControler
         )
         recyclerView.adapter = adapter
         adapter?.atualiza()
@@ -153,18 +117,13 @@ class ListaPecaRoupaFragment : Fragment(), NavigationView.OnNavigationItemSelect
                         object : AlertDialogUtils.CallBackDialog {
                             override fun cliqueBotaoConfirma() {
 
-
                                 token?.let { token ->
                                     viewModelUsuario.deletarToken(token)
                                         .observe(context as LifecycleOwner,
                                             Observer { resourcePosDelecao ->
 
                                                 if (resourcePosDelecao.dados != null) {
-                                                    val intent = Intent(
-                                                        context,
-                                                        LoginActivity::class.java
-                                                    )
-                                                    startActivity(intent)
+                                                    vaiParaLogin()
                                                 } else {
                                                     ToastUtils().showCenterToastShort(
                                                         context!!,
@@ -189,5 +148,13 @@ class ListaPecaRoupaFragment : Fragment(), NavigationView.OnNavigationItemSelect
         }
         return true
     }
+
+    private fun vaiParaLogin() {
+        val action =
+            ListaPecaRoupaFragmentDirections.actionGlobalLogout()
+        navControler.popBackStack()
+        navControler.navigate(action)
+    }
+
 
 }

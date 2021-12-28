@@ -12,7 +12,7 @@ interface PecaRoupaService {
     fun salva(@Body pecaRoupa: PecaRoupa): Call<PecaRoupa>
 
     @PUT("pecas-roupas/roupas")
-    fun edita(@Body pecaRoupa: PecaRoupa): Call<PecaRoupa>
+    fun edita(@Body pecaRoupa: PecaRoupa?): Call<PecaRoupa>
 
     @PUT("pecas-roupas/roupas/muda-posicao")
     fun trocaPosicao(@Body pecaRoupa: MutableList<PecaRoupa>?): Call<Void>

@@ -95,7 +95,7 @@ class RepositoryPecaRoupa(
     }
 
     fun editaPecaRoupa(
-        pecaRoupa: PecaRoupa
+        pecaRoupa: PecaRoupa?
     ): LiveData<Resource<PecaRoupa?>> {
         val resourcePosSalvamento = MutableLiveData<Resource<PecaRoupa?>>()
         mediadorEditaPecaRoupa.addSource(resourcePosSalvamento) {
