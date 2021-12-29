@@ -1,41 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/card_peca_roupa"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_margin="5dp">
+<layout>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="clique"
+            type="com.example.lavanderia_cliente.ui.recyclerview.adapter.ListaRoupasAdapter.ListaRoupasViewHolder" />
+
+        <variable
+            name="pecaRoupa"
+            type="com.example.lavanderia_cliente.model.PecaRoupa" />
+    </data>
+
+    <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/card_peca_roupa"
+        android:onClick="@{() -> clique.cliqueNota()}"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp">
 
-        <TextView
-            android:id="@+id/card_peca_roupa_nome_peca"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            android:maxLines="1"
-            android:textSize="30sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="Camiseta" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/card_peca_roupa_status_roupa"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:textColor="#4CAF50"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@id/card_peca_roupa_nome_peca"
-            app:layout_constraintTop_toBottomOf="@id/card_peca_roupa_nome_peca"
-            tools:text="Pronta para retirada" />
+            <TextView
+                android:id="@+id/card_peca_roupa_nome_peca"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:maxLines="1"
+                android:text="@{pecaRoupa.nome}"
+                android:textSize="30sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="Camiseta" />
+
+            <TextView
+                android:id="@+id/card_peca_roupa_status_roupa"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:textColor="#4CAF50"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:visibility="@{pecaRoupa.status != null ? View.VISIBLE : View.GONE}"
+                app:layout_constraintStart_toStartOf="@id/card_peca_roupa_nome_peca"
+                app:layout_constraintTop_toBottomOf="@id/card_peca_roupa_nome_peca"
+                tools:text="Pronta para retirada" />
 
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</androidx.cardview.widget.CardView>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+</layout>
