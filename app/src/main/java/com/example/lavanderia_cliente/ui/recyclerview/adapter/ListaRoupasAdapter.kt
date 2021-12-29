@@ -1,24 +1,26 @@
 package com.example.lavanderia_cliente.ui.recyclerview.adapter
 
 import android.content.Context
-import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
+import android.widget.AdapterView
 import android.widget.TextView
+import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.lavanderia_cliente.R
+import com.example.lavanderia_cliente.databinding.CardPecaRoupaLayoutBinding
 import com.example.lavanderia_cliente.model.PecaRoupa
 import com.example.lavanderia_cliente.ui.activity.MainActivity
-import com.example.lavanderia_cliente.ui.fragment.FormularioDeliveryFragment
 import com.example.lavanderia_cliente.ui.fragment.ListaPecaRoupaFragmentDirections
 import com.example.lavanderia_cliente.ui.viewmodel.PecaRoupaViewModel
-import com.example.lavanderia_cliente.utils.*
-import com.example.lavanderia_cliente.utils.Constantes.Companion.EXTRA_PECA_PARA_EDICAO
+import com.example.lavanderia_cliente.utils.AlertDialogUtils
+import com.example.lavanderia_cliente.utils.ConnectionManagerUtils
+import com.example.lavanderia_cliente.utils.ProgressBarUtils
+import com.example.lavanderia_cliente.utils.ToastUtils
 import java.util.*
 
 class ListaRoupasAdapter(
@@ -30,19 +32,26 @@ class ListaRoupasAdapter(
     val pecasRoupas: MutableList<PecaRoupa> = mutableListOf()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListaRoupasViewHolder {
-        var view =
-            LayoutInflater.from(context).inflate(R.layout.card_peca_roupa_layout, parent, false)
-        return ListaRoupasViewHolder(view)
+        var inflate =
+            LayoutInflater.from(context)
+        val viewDataBinding =
+            DataBindingUtil.inflate<CardPecaRoupaLayoutBinding>(
+                inflate,
+                R.layout.card_peca_roupa_layout,
+                parent,
+                false
+            )
+        return ListaRoupasViewHolder(viewDataBinding)
     }
 
     override fun onBindViewHolder(holder: ListaRoupasViewHolder, position: Int) {
         holder.vincula(pecasRoupas?.get(position))
         holder.itemView.setOnClickListener {
-            vaiParaEdicaoNoFormulario(holder)
+            vaiParaEdicaoNoFormulario(pecasRoupas[position])
         }
     }
 
-    private fun vaiParaEdicaoNoFormulario(holder: ListaRoupasViewHolder) {
+    private fun vaiParaEdicaoNoFormulario(peca: PecaRoupa?) {
 //        val formularioDeliveryFragment = FormularioDeliveryFragment()
 //        val dados = Bundle()
 //        dados.putSerializable(
@@ -60,10 +69,9 @@ class ListaRoupasAdapter(
 //                } else {
 //                    R.id.activity_main_container_primario
 //                }
-            val pecaParaEdicao = pecasRoupas[holder.adapterPosition]
             val actionListaPecasRoupasToFormularioDeliveryComPecaEdicao =
                 ListaPecaRoupaFragmentDirections.actionListaPecasRoupasToFormularioDelivery(
-                    pecaParaEdicao
+                    peca
                 )
             navController.navigate(actionListaPecasRoupasToFormularioDeliveryComPecaEdicao)
 
@@ -187,14 +195,29 @@ class ListaRoupasAdapter(
         }
     }
 
-    class ListaRoupasViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val nomePecaRoupa = itemView.findViewById<TextView>(R.id.card_peca_roupa_nome_peca)
+    class ListaRoupasViewHolder(private var cardViewBinding: CardPecaRoupaLayoutBinding) :
+        RecyclerView.ViewHolder(cardViewBinding.root) {
+
+
+        init {
+            cardViewBinding.clique = this
+        }
+
+
+        //        val nomePecaRoupa = itemView.findViewById<TextView>(R.id.card_peca_roupa_nome_peca)
         val statusPecaRoupa =
             itemView.findViewById<TextView>(R.id.card_peca_roupa_status_roupa)
 
+
         fun vincula(peca: PecaRoupa?) {
-            nomePecaRoupa.text = peca?.nome
+            cardViewBinding.pecaRoupa = peca
+//            nomePecaRoupa.text = peca?.nome
             statusPecaRoupa.text = peca?.status
         }
+
+        fun cliqueNota() {
+            Log.e("TESTE", "X")
+        }
     }
+
 }

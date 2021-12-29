@@ -14,6 +14,7 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.lavanderia_cliente.R
+import com.example.lavanderia_cliente.databinding.ListaRoupasFragmentBinding
 import com.example.lavanderia_cliente.ui.activity.MainActivity.Companion.cliente
 import com.example.lavanderia_cliente.ui.activity.MainActivity.Companion.mToogle
 import com.example.lavanderia_cliente.ui.activity.MainActivity.Companion.token
@@ -23,7 +24,6 @@ import com.example.lavanderia_cliente.ui.recyclerview.adapter.ListaRoupasAdapter
 import com.example.lavanderia_cliente.ui.viewmodel.ComponetesVisuais
 import com.example.lavanderia_cliente.utils.AlertDialogUtils
 import com.example.lavanderia_cliente.utils.ToastUtils
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 
 class ListaPecaRoupaFragment : BaseFragment(), NavigationView.OnNavigationItemSelectedListener {
@@ -41,7 +41,11 @@ class ListaPecaRoupaFragment : BaseFragment(), NavigationView.OnNavigationItemSe
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.lista_roupas_fragment, container, false)
+        val viewBinding = ListaRoupasFragmentBinding.inflate(inflater, container, false)
+        viewBinding.clickListener = View.OnClickListener {
+            vaiParaFormulario()
+        }
+        return viewBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -49,17 +53,8 @@ class ListaPecaRoupaFragment : BaseFragment(), NavigationView.OnNavigationItemSe
         viewModelEstado.temComponentes = ComponetesVisuais(appBar = true, bottomNavigation = true)
         configuraDrawerLayout(view)
         context?.let { inicializaAdapter(view, it) }
-        inicializaBtnFabDelivery(view)
     }
 
-    private fun inicializaBtnFabDelivery(view: View) {
-        val btnFabSolicitacaoDelivery =
-            view.findViewById<FloatingActionButton>(R.id.lista_roupas_fab_delivery)
-        btnFabSolicitacaoDelivery.setOnClickListener {
-            vaiParaFormulario()
-
-        }
-    }
 
     private fun vaiParaFormulario() {
         val acttion =
