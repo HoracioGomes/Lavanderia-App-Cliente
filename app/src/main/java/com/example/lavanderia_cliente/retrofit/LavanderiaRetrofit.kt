@@ -1,5 +1,6 @@
 package com.example.lavanderia_cliente.retrofit
 
+import com.example.lavanderia_cliente.Url
 import com.example.lavanderia_cliente.retrofit.service.UsuarioService
 import com.example.lavanderia_cliente.retrofit.service.PecaRoupaService
 import com.google.gson.GsonBuilder
@@ -12,7 +13,9 @@ import retrofit2.converter.gson.GsonConverterFactory
 class LavanderiaRetrofit {
 
     companion object {
-        var baseUrl = "http://url_here"
+        // The Url class is not shared. put your own ip.
+        // Ex: "http://xxx.xx.xxx.xx:3333(3333 is the Lavanderia_Api port)"
+        var baseUrl = Url.myUrl
     }
 
 
