@@ -86,7 +86,7 @@ class FormularioDeliveryFragment : BaseFragment() {
                 data = DataUtils().dataAtualParaBanco()
             )
         if (ConnectionManagerUtils().checkInternetConnection(context) == 1) {
-            viewModelPecaRoupa.salva(pecaParaDelivery).observe(
+            viewModelPecasRoupa.salva(pecaParaDelivery).observe(
                 context as LifecycleOwner, {
                     if (it.erro == null) {
                         editTextNomePeca.text.clear()
@@ -125,7 +125,7 @@ class FormularioDeliveryFragment : BaseFragment() {
             val nomePecaEditado: String = editTextNomePeca.text.toString()
             pecaRoupa?.nome = nomePecaEditado
 
-            viewModelPecaRoupa.edita(pecaRoupa).observe(context as LifecycleOwner,
+            viewModelPecasRoupa.edita(pecaRoupa).observe(context as LifecycleOwner,
                 {
                     if (it.erro == null) {
                         arguments?.clear()
