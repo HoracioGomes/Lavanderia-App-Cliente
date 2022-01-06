@@ -10,9 +10,11 @@ import com.example.lavanderia_cliente.retrofit.webclient.PecaRoupaWebClient
 
 class RepositoryPecaRoupa(
     private val dao: PecaRoupaDao,
-    private val pecaRoupaWebClient: PecaRoupaWebClient = PecaRoupaWebClient()
 ) {
 
+    private val pecaRoupaWebClient: PecaRoupaWebClient by lazy {
+        PecaRoupaWebClient()
+    }
 
     private val mediadorBuscaPecasRoupa = MediatorLiveData<Resource<List<PecaRoupa>?>>()
     private val mediadorSalvaPecaRoupa = MediatorLiveData<Resource<Long?>>()

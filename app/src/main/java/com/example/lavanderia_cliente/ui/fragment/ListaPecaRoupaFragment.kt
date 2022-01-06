@@ -29,12 +29,14 @@ import com.google.android.material.navigation.NavigationView
 class ListaPecaRoupaFragment : BaseFragment(), NavigationView.OnNavigationItemSelectedListener {
 
     private var adapter: ListaRoupasAdapter? = null
+//    private val adapter: ListaRoupasAdapter? by inject{
+//        parametersOf(findNavController())
+//    }
+
     private lateinit var recyclerView: RecyclerView
     private lateinit var navigationView: NavigationView
     private lateinit var drawerLayout: DrawerLayout
 
-    //Koin
-//    private val viewModelEstado: EstadoAppViewModel by sharedViewModel()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -86,7 +88,7 @@ class ListaPecaRoupaFragment : BaseFragment(), NavigationView.OnNavigationItemSe
     private fun inicializaAdapter(view: View, context: Context) {
         recyclerView = view.findViewById(R.id.lista_roupas_recyclerview)
         adapter = ListaRoupasAdapter(
-            context, viewModelPecaRoupa,
+            context, viewModelPecasRoupa,
             navControler
         )
         recyclerView.adapter = adapter

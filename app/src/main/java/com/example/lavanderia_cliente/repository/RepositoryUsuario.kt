@@ -13,8 +13,11 @@ import com.example.lavanderia_cliente.retrofit.webclient.UsuarioWebClient
 class RepositoryUsuario(
     val clienteDao: ClienteDao,
     val tokenDao: TokenDao,
-    val usuarioWebClient: UsuarioWebClient = UsuarioWebClient()
 ) {
+
+    val usuarioWebClient: UsuarioWebClient by lazy {
+        UsuarioWebClient()
+    }
 
     fun logar(
         email: String,

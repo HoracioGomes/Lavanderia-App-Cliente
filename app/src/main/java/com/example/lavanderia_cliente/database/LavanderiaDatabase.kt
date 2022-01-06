@@ -46,9 +46,9 @@ abstract class LavanderiaDatabase : RoomDatabase() {
                 LavanderiaDatabase::class.java,
                 context.getString(R.string.nome_db)
             )
-//                .addMigrations(
-//                    *LavanderiaMigrations().MIGRATIONS
-//                )
+                //                .addMigrations(
+                //                    *LavanderiaMigrations().MIGRATIONS
+                //                )
                 .fallbackToDestructiveMigration()
                 .build()
 
