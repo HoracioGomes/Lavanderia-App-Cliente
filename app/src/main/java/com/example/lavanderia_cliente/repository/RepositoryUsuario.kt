@@ -33,8 +33,8 @@ class RepositoryUsuario(
         usuarioWebClient.logar(dadosLogin, quandoSucesso = { loginResponse ->
 
             if (loginResponse != null) {
-                var cliente = loginResponse.cliente
-                var token = loginResponse.token
+                val cliente = loginResponse.cliente
+                val token = loginResponse.token
 
                 if (cliente != null && token != null) {
 
@@ -63,9 +63,8 @@ class RepositoryUsuario(
 
     }
 
-    fun loginAutomatico(): LiveData<Resource<LoginResponse?>> {
-        val resourceLoginAutomatico = MutableLiveData<Resource<LoginResponse?>>()
-        var dadosLogin: LoginResponse? = null
+    fun loginAutomatico(response: (resource: Resource<LoginResponse?>?) -> Unit) {
+        var dadosLogin: Resource<LoginResponse?>? = null
 
         BaseAsyncTask(enquantoExecuta = {
             val todos = clienteDao.todos()
@@ -73,22 +72,16 @@ class RepositoryUsuario(
             if (todos.size == 1) {
                 val token = tokenDao.buscaToken(todos[0].id)
                 if (token != null) {
-                    dadosLogin = LoginResponse(todos[0], token)
+                  dadosLogin = Resource(dados = LoginResponse(todos[0], token))
                 }
             }
             dadosLogin
         },
             executado = {
-                if (dadosLogin != null) {
-                    resourceLoginAutomatico.value = Resource(dados = dadosLogin)
-                } else {
-                    resourceLoginAutomatico.value = Resource(dados = null)
-
-                }
+                response(dadosLogin)
             }
         ).execute()
 
-        return resourceLoginAutomatico
     }
 
 
