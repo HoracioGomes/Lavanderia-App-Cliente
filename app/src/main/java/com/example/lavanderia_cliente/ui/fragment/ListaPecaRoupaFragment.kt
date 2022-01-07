@@ -115,11 +115,11 @@ class ListaPecaRoupaFragment : BaseFragment(), NavigationView.OnNavigationItemSe
                             override fun cliqueBotaoConfirma() {
 
                                 token?.let { token ->
-                                    viewModelUsuario.deletarToken(token)
+                                    viewModelUsuario.deletaTokenLiveData
                                         .observe(context as LifecycleOwner,
                                             Observer { resourcePosDelecao ->
 
-                                                if (resourcePosDelecao.dados != null) {
+                                                if (resourcePosDelecao?.dados != null) {
                                                     vaiParaLogin()
                                                 } else {
                                                     ToastUtils().showCenterToastShort(
@@ -128,6 +128,8 @@ class ListaPecaRoupaFragment : BaseFragment(), NavigationView.OnNavigationItemSe
                                                     )
                                                 }
                                             })
+
+                                    viewModelUsuario.deletarToken(token)
 
                                 }
 

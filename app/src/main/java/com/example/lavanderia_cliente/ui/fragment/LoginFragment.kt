@@ -57,22 +57,22 @@ class LoginFragment : BaseFragment() {
     private fun loginManual(context: Context, email: String, senha: String) {
         if (ConnectionManagerUtils().checkInternetConnection(context) == 1) {
             val spinner: Dialog = ProgressBarUtils.mostraProgressBar(context)
-            viewModelUsuario.logar(email = email, senha = senha)
+            viewModelUsuario.loginManualLiveData
                 .observe(context as LifecycleOwner, Observer { resposta ->
 
-                    if (resposta.erro == null && resposta.dados != null) {
+                    if (resposta?.erro == null && resposta?.dados != null) {
 
                         cliente = resposta.dados.cliente
                         token = resposta.dados.token
 
                         ToastUtils().showCenterToastShort(
                             context,
-                            "${resposta?.dados.cliente?.nome} foi logado!"
+                            "${resposta.dados.cliente?.nome} foi logado!"
                         )
                         spinner.dismiss()
                         vaiParaListaPecasRoupas()
 
-                    } else if (resposta.erro != null) {
+                    } else if (resposta?.erro != null) {
                         spinner.dismiss()
 
                         ToastUtils().showCenterToastShort(
@@ -83,6 +83,8 @@ class LoginFragment : BaseFragment() {
                     }
 
                 })
+
+            viewModelUsuario.logar(email = email, senha = senha)
 
         } else {
             ToastUtils().showCenterToastShort(

@@ -21,10 +21,11 @@ class RepositoryUsuario(
 
     fun logar(
         email: String,
-        password: String
-    ): LiveData<Resource<LoginResponse?>> {
+        password: String,
+        response: (resource: Resource<LoginResponse?>?) -> Unit
+    ) {
 
-        val resourceLogin = MutableLiveData<Resource<LoginResponse?>>()
+        var resourceLogin: Resource<LoginResponse?>? = null
 
         val dadosLogin = HashMap<String, String>()
         dadosLogin["email"] = email
@@ -45,7 +46,8 @@ class RepositoryUsuario(
                     },
                         executado = {
 
-                            resourceLogin.value = Resource(loginResponse)
+                            resourceLogin = Resource(loginResponse)
+                            response(resourceLogin)
 
                         }
                     ).execute()
@@ -55,11 +57,12 @@ class RepositoryUsuario(
 
         },
             quandoFalha = {
-                resourceLogin.value = criaResourceDeFalha(resourceAntigo = null, it)
+                resourceLogin = criaResourceDeFalha(resourceAntigo = null, it)
+                response(resourceLogin)
+
             }
         )
 
-        return resourceLogin
 
     }
 
@@ -72,7 +75,7 @@ class RepositoryUsuario(
             if (todos.size == 1) {
                 val token = tokenDao.buscaToken(todos[0].id)
                 if (token != null) {
-                  dadosLogin = Resource(dados = LoginResponse(todos[0], token))
+                    dadosLogin = Resource(dados = LoginResponse(todos[0], token))
                 }
             }
             dadosLogin
@@ -85,16 +88,15 @@ class RepositoryUsuario(
     }
 
 
-    fun deletaToken(token: Token): LiveData<Resource<Int?>> {
-        val resourcePosDelecao = MutableLiveData<Resource<Int?>>()
+    fun deletaToken(token: Token, response: (Resource<Int?>?) -> Unit) {
+        var resourcePosDelecao : Resource<Int?>? = null
         BaseAsyncTask<Int>(enquantoExecuta = {
             val posDelecao = tokenDao.delete(token)
             posDelecao
         }, executado = {
-            resourcePosDelecao.value = Resource(dados = it)
+            resourcePosDelecao = Resource(dados = it)
+            response(resourcePosDelecao)
         }).execute()
-
-        return resourcePosDelecao
 
     }
 
