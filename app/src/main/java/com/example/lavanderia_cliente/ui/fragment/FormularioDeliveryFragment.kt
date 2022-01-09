@@ -1,14 +1,15 @@
 package com.example.lavanderia_cliente.ui.fragment
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
-import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.fragment.navArgs
 import com.example.lavanderia_cliente.R
+import com.example.lavanderia_cliente.extensions.hideKeyboard
 import com.example.lavanderia_cliente.model.PecaRoupa
 import com.example.lavanderia_cliente.ui.activity.MainActivity.Companion.viewModelEstado
 import com.example.lavanderia_cliente.ui.viewmodel.ComponetesVisuais
@@ -73,6 +74,7 @@ class FormularioDeliveryFragment : BaseFragment() {
 
     private fun cliqueBotaoDelivery() {
         buttonSolicitarDelivery.setOnClickListener {
+            hideKeyboard()
             salvaPecaRoupa()
         }
     }
@@ -87,7 +89,7 @@ class FormularioDeliveryFragment : BaseFragment() {
             )
         if (ConnectionManagerUtils().checkInternetConnection(context) == 1) {
             viewModelPecasRoupa.salva(pecaParaDelivery).observe(
-                context as LifecycleOwner, {
+                viewLifecycleOwner, {
                     if (it.erro == null) {
                         editTextNomePeca.text.clear()
                         ToastUtils().showCenterToastShort(
@@ -116,6 +118,7 @@ class FormularioDeliveryFragment : BaseFragment() {
 
     private fun cliqueBotaoEdita(pecaRoupa: PecaRoupa?) {
         buttonEditaPeca.setOnClickListener {
+            hideKeyboard()
             editaPecaRoupa(pecaRoupa)
         }
     }
@@ -125,7 +128,7 @@ class FormularioDeliveryFragment : BaseFragment() {
             val nomePecaEditado: String = editTextNomePeca.text.toString()
             pecaRoupa?.nome = nomePecaEditado
 
-            viewModelPecasRoupa.edita(pecaRoupa).observe(context as LifecycleOwner,
+            viewModelPecasRoupa.edita(pecaRoupa).observe(viewLifecycleOwner,
                 {
                     if (it.erro == null) {
                         arguments?.clear()

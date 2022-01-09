@@ -7,11 +7,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
-import androidx.navigation.NavOptions
-import androidx.navigation.Navigator
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupWithNavController
 import com.example.lavanderia_cliente.R
 import com.example.lavanderia_cliente.model.Cliente
@@ -46,7 +42,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         navController.addOnDestinationChangedListener { controller, destination, arguments ->
             title = destination.label
-
             viewModelEstado.componentesVisuais.observe(this, Observer {
                 it?.let { temComponentes ->
                     vizualizacaoAppBar(temComponentes)
@@ -90,6 +85,5 @@ class MainActivity : AppCompatActivity() {
             true
         }
     }
-
 
 }

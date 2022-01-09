@@ -1,5 +1,6 @@
 package com.example.lavanderia_cliente.repository
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
@@ -7,6 +8,10 @@ import com.example.lavanderia_cliente.asynctasks.BaseAsyncTask
 import com.example.lavanderia_cliente.database.dao.PecaRoupaDao
 import com.example.lavanderia_cliente.model.PecaRoupa
 import com.example.lavanderia_cliente.retrofit.webclient.PecaRoupaWebClient
+import com.example.lavanderia_cliente.utils.ProgressBarUtils
+import java.util.*
+import java.util.logging.Handler
+import kotlin.concurrent.schedule
 
 class RepositoryPecaRoupa(
     private val dao: PecaRoupaDao,
@@ -16,44 +21,33 @@ class RepositoryPecaRoupa(
         PecaRoupaWebClient()
     }
 
-    private val mediadorBuscaPecasRoupa = MediatorLiveData<Resource<List<PecaRoupa>?>>()
+    private val mediadorBuscaPecasRoupa = MediatorLiveData<Resource<List<PecaRoupa>?>?>()
     private val mediadorSalvaPecaRoupa = MediatorLiveData<Resource<Long?>>()
     private val mediadorEditaPecaRoupa = MediatorLiveData<Resource<PecaRoupa?>>()
+    private val mediadorDeletaPecaRoupa = MediatorLiveData<Resource<Int?>>()
+    private val mediadorTrocaPosicaoPecaRoupa = MediatorLiveData<Resource<Int?>>()
 
-    fun buscaPecasRoupa(): LiveData<Resource<List<PecaRoupa>?>> {
+    fun buscaPecasRoupa(): LiveData<Resource<List<PecaRoupa>?>?> {
 
-
-        mediadorBuscaPecasRoupa.addSource(buscaInterna()) { listaRetornada ->
-            mediadorBuscaPecasRoupa.value = Resource(dados = listaRetornada)
-        }
-
-        var resourceAtualizado = MutableLiveData<Resource<List<PecaRoupa>?>>()
+        var resourceAtualizado = MutableLiveData<Resource<List<PecaRoupa>?>?>()
         mediadorBuscaPecasRoupa.addSource(resourceAtualizado) { resource ->
             mediadorBuscaPecasRoupa.value = resource
         }
 
-
         pecaRoupaWebClient.buscaTodasPecas(quandoSucesso = { listaVindaApi ->
+            listaVindaApi?.let { listaDaApi ->
+                salvaInterno(listaDaApi)
 
-            listaVindaApi?.let { listaNaoNula -> salvaInterno(listaNaoNula) }
-
+            }
         },
             quandoFalha = {
                 val resourceAntigo: Resource<List<PecaRoupa>?>? =
                     mediadorBuscaPecasRoupa.value
 
-                val resourceCriado: Resource<List<PecaRoupa>?> = if (resourceAntigo != null) {
+                resourceAtualizado.value =
                     criaResourceDeFalha(resourceAntigo = resourceAntigo, mensagem = it)
-
-                } else {
-                    criaResourceDeFalha(resourceAntigo = null, mensagem = it)
-
-                }
-                resourceAtualizado.value = resourceCriado
-
             }
         )
-
         return mediadorBuscaPecasRoupa
     }
 
@@ -62,8 +56,15 @@ class RepositoryPecaRoupa(
         BaseAsyncTask(enquantoExecuta = {
             dao.salvaVarias(listaNaoNula)
         }, executado = {
+            IniciaObeserverMediadorBuscaPecasRoupa()
 
         }).execute()
+    }
+
+    private fun IniciaObeserverMediadorBuscaPecasRoupa() {
+        mediadorBuscaPecasRoupa.addSource(buscaInterna()) { listaRetornada ->
+            mediadorBuscaPecasRoupa.value = Resource(listaRetornada)
+        }
     }
 
     fun buscaInterna(): LiveData<List<PecaRoupa>?> {
@@ -107,10 +108,14 @@ class RepositoryPecaRoupa(
         pecaRoupaWebClient.editaPeca(pecaRoupa, quandoSucesso = { pecaRetornadaApi ->
 
             BaseAsyncTask(enquantoExecuta = {
+//                Timer().schedule(5000) {
+//                    Log.d("TESTE", "ENTROU NO SCHEDULE")
+//                }
                 dao.edita(pecaRoupa)
             }, executado = {
-                resourcePosSalvamento.value = Resource(dados = pecaRetornadaApi)
-
+                if (it > 0) {
+                    resourcePosSalvamento.value = Resource(dados = pecaRetornadaApi)
+                }
             }).execute()
 
         }, quandoFalha = { erro ->
@@ -122,9 +127,12 @@ class RepositoryPecaRoupa(
 
     fun trocaPosicao(
         pecasRoupastrocadas: MutableList<PecaRoupa>?
-    ): LiveData<Resource<Void?>> {
+    ): LiveData<Resource<Int?>> {
 
-        val resourcePosEdicao = MutableLiveData<Resource<Void?>>()
+        val resourcePosEdicao = MutableLiveData<Resource<Int?>>()
+        mediadorTrocaPosicaoPecaRoupa.addSource(resourcePosEdicao) {
+            mediadorTrocaPosicaoPecaRoupa.value = it
+        }
 
         pecaRoupaWebClient.trocaposicoesPecas(pecasRoupastrocadas, quandoSucesso = {
             trocaPosicaoInterna(pecasRoupastrocadas)
@@ -134,39 +142,47 @@ class RepositoryPecaRoupa(
                 resourcePosEdicao.value = criaResourceDeFalha(resourceAntigo = null, mensagem = it)
             })
 
-        return resourcePosEdicao
+        return mediadorTrocaPosicaoPecaRoupa
 
     }
 
     private fun trocaPosicaoInterna(pecasRoupastrocadas: MutableList<PecaRoupa>?) {
         BaseAsyncTask(enquantoExecuta = {
             dao.edita(pecasRoupastrocadas?.get(0), pecasRoupastrocadas?.get(1))
+
         }, executado = {
+            if (it > 0) {
+                mediadorTrocaPosicaoPecaRoupa.value = Resource(it)
+            }
 
         }).execute()
     }
 
-    fun deletaPecaRoupa(id: Long?): LiveData<Resource<Void?>> {
+    fun deletaPecaRoupa(id: Long?): LiveData<Resource<Int?>> {
 
-        val resourcePosDelecao = MutableLiveData<Resource<Void?>>()
+        val resourcePosDelecao = MutableLiveData<Resource<Int?>>()
+        mediadorDeletaPecaRoupa.addSource(resourcePosDelecao){
+            mediadorDeletaPecaRoupa.value = it
+        }
 
         pecaRoupaWebClient.deletaPecaRoupa(id, quandoSucesso = {
-            deletaInterno(id, resourcePosDelecao)
+            deletaInterno(id)
         }, quandoFalha = {
             resourcePosDelecao.value = criaResourceDeFalha(resourceAntigo = null, mensagem = it)
         })
 
-        return resourcePosDelecao
+        return mediadorDeletaPecaRoupa
     }
 
     private fun deletaInterno(
-        id: Long?,
-        resourcePosDelecao: MutableLiveData<Resource<Void?>>
+        id: Long?
     ) {
         BaseAsyncTask(enquantoExecuta = {
             dao.deletePorId(id)
         }, executado = {
-            resourcePosDelecao.value = Resource(dados = null)
+            if(it > 0){
+                mediadorDeletaPecaRoupa.value = Resource(it)
+            }
         }).execute()
     }
 

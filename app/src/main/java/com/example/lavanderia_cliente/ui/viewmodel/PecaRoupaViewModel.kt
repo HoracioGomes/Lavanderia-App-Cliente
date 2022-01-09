@@ -1,6 +1,8 @@
 package com.example.lavanderia_cliente.ui.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.lavanderia_cliente.model.PecaRoupa
 import com.example.lavanderia_cliente.repository.RepositoryPecaRoupa
@@ -8,7 +10,8 @@ import com.example.lavanderia_cliente.repository.Resource
 
 class PecaRoupaViewModel(private val repository: RepositoryPecaRoupa) : ViewModel() {
 
-    fun buscaTodos(): LiveData<Resource<List<PecaRoupa>?>> {
+
+    fun buscaTodos(): LiveData<Resource<List<PecaRoupa>?>?> {
         return repository.buscaPecasRoupa()
     }
 
@@ -20,11 +23,11 @@ class PecaRoupaViewModel(private val repository: RepositoryPecaRoupa) : ViewMode
         return repository.editaPecaRoupa(pecaRoupa)
     }
 
-    fun deleta(id: Long): LiveData<Resource<Void?>> {
+    fun deleta(id: Long): LiveData<Resource<Int?>> {
         return repository.deletaPecaRoupa(id)
     }
 
-    fun trocaPosicoes(pecasParaTroca: MutableList<PecaRoupa>?): LiveData<Resource<Void?>> {
+    fun trocaPosicoes(pecasParaTroca: MutableList<PecaRoupa>?): LiveData<Resource<Int?>> {
         return repository.trocaPosicao(pecasParaTroca)
     }
 

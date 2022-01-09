@@ -12,7 +12,7 @@ abstract class TokenDao {
     abstract fun salva(token: Token)
 
     @Query("SELECT * from token WHERE idCliente = :idCliente")
-    abstract fun buscaToken(idCliente: Long?): Token
+    abstract fun buscaToken(idCliente: Long?): Token?
 
     @Delete
     abstract fun delete(token: Token): Int

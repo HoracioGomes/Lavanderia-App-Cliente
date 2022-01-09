@@ -9,8 +9,8 @@ import java.io.Serializable
 class LoginResponse(
     @SerializedName("usuario")
     @Expose
-    var cliente: Cliente,
+    var cliente: Cliente?,
     @SerializedName("token")
     @Expose
-    var token: Token,
+    var token: Token?,
 )

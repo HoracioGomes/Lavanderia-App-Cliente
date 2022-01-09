@@ -56,23 +56,23 @@ class LoginFragment : BaseFragment() {
 
     private fun loginManual(context: Context, email: String, senha: String) {
         if (ConnectionManagerUtils().checkInternetConnection(context) == 1) {
-            var spinner: Dialog = ProgressBarUtils.mostraProgressBar(context)
-            viewModelUsuario.logar(email = email, senha = senha)
+            val spinner: Dialog = ProgressBarUtils.mostraProgressBar(context)
+            viewModelUsuario.loginManualLiveData
                 .observe(context as LifecycleOwner, Observer { resposta ->
 
-                    if (resposta.erro == null && resposta.dados != null) {
+                    if (resposta?.erro == null && resposta?.dados != null) {
 
                         cliente = resposta.dados.cliente
                         token = resposta.dados.token
 
                         ToastUtils().showCenterToastShort(
                             context,
-                            "${resposta?.dados.cliente.nome} foi logado!"
+                            "${resposta.dados.cliente?.nome} foi logado!"
                         )
                         spinner.dismiss()
                         vaiParaListaPecasRoupas()
 
-                    } else if (resposta.erro != null) {
+                    } else if (resposta?.erro != null) {
                         spinner.dismiss()
 
                         ToastUtils().showCenterToastShort(
@@ -84,6 +84,8 @@ class LoginFragment : BaseFragment() {
 
                 })
 
+            viewModelUsuario.logar(email = email, senha = senha)
+
         } else {
             ToastUtils().showCenterToastShort(
                 context,
@@ -94,20 +96,22 @@ class LoginFragment : BaseFragment() {
     }
 
     fun tentaLoginAutomatico(context: Context) {
-        viewModelUsuario.loginAutomatico()
+        viewModelUsuario.loginAutomaticoLiveData
             .observe(context as LifecycleOwner, Observer { resposta ->
-                var spinner: Dialog = ProgressBarUtils.mostraProgressBar(context)
-                if (resposta.dados?.token != null && resposta.dados?.cliente != null) {
+                val spinner: Dialog = ProgressBarUtils.mostraProgressBar(context)
+                if (resposta?.dados?.token != null && resposta.dados.cliente != null) {
                     cliente =
-                        resposta?.dados?.cliente
+                        resposta.dados.cliente
 
-                    token = resposta?.dados?.token
+                    token = resposta.dados.token
                     spinner.dismiss()
                     vaiParaListaPecasRoupas()
 
                 }
                 spinner.dismiss()
             })
+
+        viewModelUsuario.loginAutomatico()
     }
 
     private fun vaiParaListaPecasRoupas() {
