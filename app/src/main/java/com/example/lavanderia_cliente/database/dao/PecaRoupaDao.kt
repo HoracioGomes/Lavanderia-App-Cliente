@@ -20,12 +20,12 @@ abstract class PecaRoupaDao {
         "DELETE FROM PecaRoupa " +
                 "WHERE PecaRoupa.id = :id"
     )
-    abstract fun deletePorId(id: Long?)
+    abstract fun deletePorId(id: Long?): Int
 
     @Update()
-    abstract fun edita(vararg peca: PecaRoupa?)
+    abstract fun edita(vararg peca: PecaRoupa?): Int
 
-    @Query("SELECT * FROM pecaroupa")
+    @Query("SELECT * FROM PecaRoupa")
     abstract fun todas(): LiveData<List<PecaRoupa>?>
 
 }

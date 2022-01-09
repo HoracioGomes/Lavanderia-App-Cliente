@@ -1,35 +1,27 @@
 package com.example.lavanderia_cliente.ui.recyclerview.adapter
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
 import android.widget.TextView
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.LifecycleOwner
-import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.lavanderia_cliente.R
 import com.example.lavanderia_cliente.databinding.CardPecaRoupaLayoutBinding
 import com.example.lavanderia_cliente.model.PecaRoupa
-import com.example.lavanderia_cliente.ui.activity.MainActivity
-import com.example.lavanderia_cliente.ui.fragment.ListaPecaRoupaFragmentDirections
-import com.example.lavanderia_cliente.ui.viewmodel.PecaRoupaViewModel
-import com.example.lavanderia_cliente.utils.AlertDialogUtils
 import com.example.lavanderia_cliente.utils.ConnectionManagerUtils
-import com.example.lavanderia_cliente.utils.ProgressBarUtils
 import com.example.lavanderia_cliente.utils.ToastUtils
 import java.util.*
 
 class ListaRoupasAdapter(
-    private val context: Context,
-    private val viewModelRoupa: PecaRoupaViewModel,
-    private val navController: NavController
+    private val context: Context
 ) : RecyclerView.Adapter<ListaRoupasAdapter.ListaRoupasViewHolder>() {
 
     val pecasRoupas: MutableList<PecaRoupa> = mutableListOf()
+    var cliqueCardParaEdicao: (pecaRoupaEdicao: PecaRoupa?) -> Unit = {}
+    var removePecaRoupa: (idPecaExclusao: Long) -> Unit = {}
+    var trocaPosicoesPecasRoupa: (idPecaExclusao: MutableList<PecaRoupa>?) -> Unit = {}
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListaRoupasViewHolder {
         var inflate =
@@ -47,43 +39,7 @@ class ListaRoupasAdapter(
     override fun onBindViewHolder(holder: ListaRoupasViewHolder, position: Int) {
         holder.vincula(pecasRoupas?.get(position))
         holder.itemView.setOnClickListener {
-            vaiParaEdicaoNoFormulario(pecasRoupas[position])
-        }
-    }
-
-    private fun vaiParaEdicaoNoFormulario(peca: PecaRoupa?) {
-//        val formularioDeliveryFragment = FormularioDeliveryFragment()
-//        val dados = Bundle()
-//        dados.putSerializable(
-//            EXTRA_PECA_PARA_EDICAO,
-//            pecasRoupas?.get(holder.adapterPosition)
-//        )
-//        formularioDeliveryFragment.arguments = dados
-
-        if (context is MainActivity) {
-            val mainActivity = context
-
-//            val container =
-//                if (mainActivity.findViewById<FrameLayout>(R.id.activity_main_container_secundario) != null) {
-//                    R.id.activity_main_container_secundario
-//                } else {
-//                    R.id.activity_main_container_primario
-//                }
-            val actionListaPecasRoupasToFormularioDeliveryComPecaEdicao =
-                ListaPecaRoupaFragmentDirections.actionListaPecasRoupasToFormularioDelivery(
-                    peca
-                )
-            navController.navigate(actionListaPecasRoupasToFormularioDeliveryComPecaEdicao)
-
-
-//            val transaction = fragmentManager?.beginTransaction()
-//
-//            transaction?.replace(
-//                container,
-//                formularioDeliveryFragment,
-//                Constantes.TAG_FRAGMENT_FORMULARIO
-//            )
-//            transaction?.commit()
+            cliqueCardParaEdicao(pecasRoupas?.get(position))
         }
     }
 
@@ -95,70 +51,18 @@ class ListaRoupasAdapter(
         return 0
     }
 
-    fun atualiza() {
-
-        viewModelRoupa.buscaTodos()
-            .observe(context as LifecycleOwner, androidx.lifecycle.Observer {
-                it.dados?.let { dados ->
-                    pecasRoupas?.clear()
-                    pecasRoupas?.addAll(dados)
-                    pecasRoupas?.sortBy { pecaRoupa -> pecaRoupa.posicaoNaLista }
-                    notifyDataSetChanged()
-                }
-                it.erro?.let { erro ->
-                    ToastUtils().showCenterToastLong(context, "$erro")
-                }
-            })
-
+    fun popula(lista: List<PecaRoupa>?) {
+        notifyItemRangeRemoved(0, pecasRoupas.size)
+        pecasRoupas?.clear()
+        lista?.let { pecasRoupas.addAll(it) }
+        pecasRoupas?.sortBy { pecaRoupa -> pecaRoupa.posicaoNaLista }
+        notifyItemRangeInserted(0, pecasRoupas.size)
     }
 
 
     fun remove(position: Int) {
-        AlertDialogUtils(context).exibirDialogPadrao(
-            context.getString(R.string.titulo_dialog_cancelar_processo),
-            context.getString(R.string.mensagem_dialog_cancelar_processo),
-            object : AlertDialogUtils.CallBackDialog {
-                override fun cliqueBotaoConfirma() {
-                    if (ConnectionManagerUtils().checkInternetConnection(context) == 1) {
-                        val spinner = ProgressBarUtils.mostraProgressBar(context)
-
-                        viewModelRoupa.deleta(pecasRoupas?.get(position)?.id)
-                            .observe(
-                                context as LifecycleOwner, androidx.lifecycle.Observer {
-
-                                    if (it.erro == null) {
-                                        spinner.dismiss()
-                                        ToastUtils().showCenterToastShort(
-                                            context,
-                                            context.getString(R.string.toast_cancelado)
-                                        )
-                                    } else {
-                                        spinner.dismiss()
-                                        ToastUtils().showCenterToastShort(context, it.erro)
-                                        notifyDataSetChanged()
-                                    }
-
-                                }
-                            )
-
-                    } else {
-                        ToastUtils().showCenterToastShort(
-                            context,
-                            context.getString(R.string.mensagen_conectese_a_rede)
-                        )
-                    }
-                }
-
-                override fun cliqueBotaoCancela() {
-                    ToastUtils().showCenterToastShort(
-                        context,
-                        context.getString(R.string.toast_acao_revertida)
-                    )
-                    atualiza()
-                }
-            })
+        removePecaRoupa(pecasRoupas?.get(position)?.id)
     }
-
 
     fun trocaPosicaoNoAdapterEApi(posicaoInicial: Int, posicaoFinal: Int) {
         if (ConnectionManagerUtils().checkInternetConnection(context) == 1) {
@@ -171,22 +75,12 @@ class ListaRoupasAdapter(
                 pecasRoupas?.get(posicaoFinal)?.posicaoNaLista = pos1
             }
 
-
             var pecasParaEdicao: MutableList<PecaRoupa> =
                 mutableListOf(pecasRoupas[posicaoInicial], pecasRoupas[posicaoFinal])
 
+            trocaPosicoesPecasRoupa(pecasParaEdicao)
+            Collections.swap(pecasRoupas, posicaoInicial, posicaoFinal)
 
-            viewModelRoupa.trocaPosicoes(pecasParaEdicao)
-                .observe(context as LifecycleOwner, androidx.lifecycle.Observer {
-                    if (it.erro == null) {
-                        Collections.swap(pecasRoupas, posicaoInicial, posicaoFinal)
-                        notifyDataSetChanged()
-                    } else {
-                        ToastUtils().showCenterToastShort(context, it.erro)
-                        notifyDataSetChanged()
-                    }
-                }
-                )
         } else {
             ToastUtils().showCenterToastShort(
                 context,
@@ -198,26 +92,23 @@ class ListaRoupasAdapter(
     class ListaRoupasViewHolder(private var cardViewBinding: CardPecaRoupaLayoutBinding) :
         RecyclerView.ViewHolder(cardViewBinding.root) {
 
-
         init {
             cardViewBinding.clique = this
         }
 
-
-        //        val nomePecaRoupa = itemView.findViewById<TextView>(R.id.card_peca_roupa_nome_peca)
         val statusPecaRoupa =
             itemView.findViewById<TextView>(R.id.card_peca_roupa_status_roupa)
 
 
         fun vincula(peca: PecaRoupa?) {
             cardViewBinding.pecaRoupa = peca
-//            nomePecaRoupa.text = peca?.nome
             statusPecaRoupa.text = peca?.status
         }
 
-        fun cliqueNota() {
-            Log.e("TESTE", "X")
-        }
+// Implementar Data Binding
+//        fun cliqueNota() {
+//            Log.e("TESTE", "CLICOU NOTA")
+//        }
     }
 
 }

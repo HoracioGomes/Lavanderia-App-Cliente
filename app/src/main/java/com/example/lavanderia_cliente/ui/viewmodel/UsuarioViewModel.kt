@@ -17,20 +17,17 @@ class UsuarioViewModel(private val repository: RepositoryUsuario) : ViewModel() 
 
     fun loginAutomatico() {
         repository.loginAutomatico(response = { responseLoginAutomatico ->
-                loginAutomaticoLiveData.value = responseLoginAutomatico
-
+            loginAutomaticoLiveData.value = responseLoginAutomatico
         })
-
     }
 
-    fun logar(email: String, senha: String){
+    fun logar(email: String, senha: String) {
         repository.logar(email, senha, response = { responseLoginManual ->
             loginManualLiveData.value = responseLoginManual
         })
     }
 
-
-    fun deletarToken(token: Token){
+    fun deletarToken(token: Token) {
         return repository.deletaToken(token, response = { response ->
             deletaTokenLiveData.value = response
         })
