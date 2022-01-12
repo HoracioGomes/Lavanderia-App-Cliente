@@ -1,11 +1,14 @@
 package com.example.lavanderia_cliente.repository
 
-import com.example.lavanderia_cliente.asynctasks.BaseAsyncTask
 import com.example.lavanderia_cliente.database.dao.ClienteDao
 import com.example.lavanderia_cliente.database.dao.TokenDao
 import com.example.lavanderia_cliente.model.Token
 import com.example.lavanderia_cliente.retrofit.responses.LoginResponse
 import com.example.lavanderia_cliente.retrofit.webclient.UsuarioWebClient
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class RepositoryUsuario(
@@ -37,18 +40,15 @@ class RepositoryUsuario(
 
                 if (cliente != null && token != null) {
 
-                    BaseAsyncTask(enquantoExecuta = {
-                        clienteDao.salva(cliente)
-                        tokenDao.salva(token)
-
-                    },
-                        executado = {
-
-                            resourceLogin = Resource(loginResponse)
-                            response(resourceLogin)
-
+                    CoroutineScope(Dispatchers.Main).launch {
+                        withContext(Dispatchers.Default) {
+                            clienteDao.salva(cliente)
+                            tokenDao.salva(token)
                         }
-                    ).execute()
+                        resourceLogin = Resource(loginResponse)
+                        response(resourceLogin)
+                    }.start()
+
                 }
             }
 
@@ -66,35 +66,31 @@ class RepositoryUsuario(
 
     fun loginAutomatico(response: (resource: Resource<LoginResponse?>?) -> Unit) {
         var dadosLogin: Resource<LoginResponse?>? = null
-
-        BaseAsyncTask(enquantoExecuta = {
-            val todos = clienteDao.todos()
-
-            if (todos.size == 1) {
-                val token = tokenDao.buscaToken(todos[0].id)
-                if (token != null) {
-                    dadosLogin = Resource(dados = LoginResponse(todos[0], token))
+        CoroutineScope(Dispatchers.Main).launch {
+            withContext(Dispatchers.Default) {
+                val todos = clienteDao.todos()
+                if (todos.size == 1) {
+                    val token = tokenDao.buscaToken(todos[0].id)
+                    if (token != null) {
+                        dadosLogin = Resource(dados = LoginResponse(todos[0], token))
+                    }
                 }
             }
-            dadosLogin
-        },
-            executado = {
-                response(dadosLogin)
-            }
-        ).execute()
+            response(dadosLogin)
+        }.start()
 
     }
 
 
     fun deletaToken(token: Token, response: (Resource<Int?>?) -> Unit) {
         var resourcePosDelecao: Resource<Int?>? = null
-        BaseAsyncTask<Int>(enquantoExecuta = {
-            val posDelecao = tokenDao.delete(token)
-            posDelecao
-        }, executado = {
-            resourcePosDelecao = Resource(dados = it)
+
+        CoroutineScope(Dispatchers.Main).launch {
+            withContext(Dispatchers.Default) {
+                resourcePosDelecao = Resource(dados = tokenDao.delete(token))
+            }
             response(resourcePosDelecao)
-        }).execute()
+        }.start()
 
     }
 
