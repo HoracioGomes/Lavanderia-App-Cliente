@@ -1,17 +1,15 @@
 package com.example.lavanderia_cliente.repository
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
-import com.example.lavanderia_cliente.asynctasks.BaseAsyncTask
 import com.example.lavanderia_cliente.database.dao.PecaRoupaDao
 import com.example.lavanderia_cliente.model.PecaRoupa
 import com.example.lavanderia_cliente.retrofit.webclient.PecaRoupaWebClient
-import com.example.lavanderia_cliente.utils.ProgressBarUtils
-import java.util.*
-import java.util.logging.Handler
-import kotlin.concurrent.schedule
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class RepositoryPecaRoupa(
     private val dao: PecaRoupaDao,
@@ -28,6 +26,10 @@ class RepositoryPecaRoupa(
     private val mediadorTrocaPosicaoPecaRoupa = MediatorLiveData<Resource<Int?>>()
 
     fun buscaPecasRoupa(): LiveData<Resource<List<PecaRoupa>?>?> {
+
+        mediadorBuscaPecasRoupa.addSource(buscaInterna()) { listaRetornada ->
+            mediadorBuscaPecasRoupa.value = Resource(listaRetornada)
+        }
 
         var resourceAtualizado = MutableLiveData<Resource<List<PecaRoupa>?>?>()
         mediadorBuscaPecasRoupa.addSource(resourceAtualizado) { resource ->
@@ -52,22 +54,16 @@ class RepositoryPecaRoupa(
     }
 
     private fun salvaInterno(listaNaoNula: List<PecaRoupa>) {
+        CoroutineScope(Dispatchers.Main).launch {
+            withContext(Dispatchers.Default) {
+                dao.salvaVarias(listaNaoNula)
+            }
+        }.start()
 
-        BaseAsyncTask(enquantoExecuta = {
-            dao.salvaVarias(listaNaoNula)
-        }, executado = {
-            IniciaObeserverMediadorBuscaPecasRoupa()
-
-        }).execute()
     }
 
-    private fun IniciaObeserverMediadorBuscaPecasRoupa() {
-        mediadorBuscaPecasRoupa.addSource(buscaInterna()) { listaRetornada ->
-            mediadorBuscaPecasRoupa.value = Resource(listaRetornada)
-        }
-    }
 
-    fun buscaInterna(): LiveData<List<PecaRoupa>?> {
+    private fun buscaInterna(): LiveData<List<PecaRoupa>?> {
         return dao.todas()
     }
 
@@ -83,12 +79,14 @@ class RepositoryPecaRoupa(
 
         pecaRoupaWebClient.salvaPeca(pecaRoupa, quandoSucesso = { pecaDaApiPosSalva ->
 
-            BaseAsyncTask(enquantoExecuta = {
-                pecaRoupa.id = pecaDaApiPosSalva?.id ?: 0
-                dao.salva(pecaRoupa)
-            }, executado = { quantidadePecasSalvasInternamente ->
-                resourcePosSalvamento.value = Resource(dados = quantidadePecasSalvasInternamente)
-            }).execute()
+            CoroutineScope(Dispatchers.Main).launch {
+                var idPecaSalva: Long
+                withContext(Dispatchers.Default) {
+                    pecaRoupa.id = pecaDaApiPosSalva?.id ?: 0
+                    idPecaSalva = dao.salva(pecaRoupa)
+                }
+                resourcePosSalvamento.value = Resource(dados = idPecaSalva)
+            }.start()
 
         }, quandoFalha = { erro ->
             resourcePosSalvamento.value = criaResourceDeFalha(null, erro)
@@ -107,16 +105,15 @@ class RepositoryPecaRoupa(
 
         pecaRoupaWebClient.editaPeca(pecaRoupa, quandoSucesso = { pecaRetornadaApi ->
 
-            BaseAsyncTask(enquantoExecuta = {
-//                Timer().schedule(5000) {
-//                    Log.d("TESTE", "ENTROU NO SCHEDULE")
-//                }
-                dao.edita(pecaRoupa)
-            }, executado = {
-                if (it > 0) {
+            CoroutineScope(Dispatchers.Main).launch {
+                var itensEditados: Int
+                withContext(Dispatchers.Default) {
+                    itensEditados = dao.edita(pecaRoupa)
+                }
+                if (itensEditados > 0) {
                     resourcePosSalvamento.value = Resource(dados = pecaRetornadaApi)
                 }
-            }).execute()
+            }.start()
 
         }, quandoFalha = { erro ->
             resourcePosSalvamento.value = criaResourceDeFalha(null, erro)
@@ -147,21 +144,23 @@ class RepositoryPecaRoupa(
     }
 
     private fun trocaPosicaoInterna(pecasRoupastrocadas: MutableList<PecaRoupa>?) {
-        BaseAsyncTask(enquantoExecuta = {
-            dao.edita(pecasRoupastrocadas?.get(0), pecasRoupastrocadas?.get(1))
 
-        }, executado = {
-            if (it > 0) {
-                mediadorTrocaPosicaoPecaRoupa.value = Resource(it)
+        CoroutineScope(Dispatchers.Main).launch {
+            var linhasEditadas: Int
+            withContext(Dispatchers.Default) {
+                linhasEditadas = dao.edita(pecasRoupastrocadas?.get(0), pecasRoupastrocadas?.get(1))
             }
+            if (linhasEditadas > 1) {
+                mediadorTrocaPosicaoPecaRoupa.value = Resource(linhasEditadas)
+            }
+        }.start()
 
-        }).execute()
     }
 
     fun deletaPecaRoupa(id: Long?): LiveData<Resource<Int?>> {
 
         val resourcePosDelecao = MutableLiveData<Resource<Int?>>()
-        mediadorDeletaPecaRoupa.addSource(resourcePosDelecao){
+        mediadorDeletaPecaRoupa.addSource(resourcePosDelecao) {
             mediadorDeletaPecaRoupa.value = it
         }
 
@@ -177,23 +176,16 @@ class RepositoryPecaRoupa(
     private fun deletaInterno(
         id: Long?
     ) {
-        BaseAsyncTask(enquantoExecuta = {
-            dao.deletePorId(id)
-        }, executado = {
-            if(it > 0){
-                mediadorDeletaPecaRoupa.value = Resource(it)
+
+        CoroutineScope(Dispatchers.Main).launch {
+            var qtdItensDeletados: Int
+            withContext(Dispatchers.Default) {
+                qtdItensDeletados = dao.deletePorId(id)
             }
-        }).execute()
+            if (qtdItensDeletados > 0) {
+                mediadorDeletaPecaRoupa.value = Resource(qtdItensDeletados)
+            }
+        }.start()
     }
 
-
-//    interface CallBackRepositorypecaRoupa<T> {
-//        fun quandoSucesso(dados: T)
-//        fun quandoFalha(erro: String)
-//    }
-//
-//    interface CallBackRepositorypecaRoupaSemBody {
-//        fun quandoSucesso()
-//        fun quandoFalha(erro: String)
-//    }
 }

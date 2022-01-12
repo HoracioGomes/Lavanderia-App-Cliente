@@ -24,6 +24,7 @@
         <action
             android:id="@+id/action_formularioDelivery_to_listaPecasRoupas"
             app:destination="@id/listaPecasRoupas"
+            app:launchSingleTop="false"
             app:popExitAnim="@anim/nav_default_pop_exit_anim"
             app:popUpTo="@id/listaPecasRoupas"
             app:popUpToInclusive="true" />

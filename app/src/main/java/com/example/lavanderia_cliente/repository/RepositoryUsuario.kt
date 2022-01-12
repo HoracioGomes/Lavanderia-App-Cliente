@@ -1,7 +1,5 @@
 package com.example.lavanderia_cliente.repository
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.example.lavanderia_cliente.asynctasks.BaseAsyncTask
 import com.example.lavanderia_cliente.database.dao.ClienteDao
 import com.example.lavanderia_cliente.database.dao.TokenDao
@@ -89,7 +87,7 @@ class RepositoryUsuario(
 
 
     fun deletaToken(token: Token, response: (Resource<Int?>?) -> Unit) {
-        var resourcePosDelecao : Resource<Int?>? = null
+        var resourcePosDelecao: Resource<Int?>? = null
         BaseAsyncTask<Int>(enquantoExecuta = {
             val posDelecao = tokenDao.delete(token)
             posDelecao

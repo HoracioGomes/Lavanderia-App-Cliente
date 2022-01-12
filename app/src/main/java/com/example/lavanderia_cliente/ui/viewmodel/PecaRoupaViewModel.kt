@@ -1,15 +1,12 @@
 package com.example.lavanderia_cliente.ui.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.lavanderia_cliente.model.PecaRoupa
 import com.example.lavanderia_cliente.repository.RepositoryPecaRoupa
 import com.example.lavanderia_cliente.repository.Resource
 
 class PecaRoupaViewModel(private val repository: RepositoryPecaRoupa) : ViewModel() {
-
 
     fun buscaTodos(): LiveData<Resource<List<PecaRoupa>?>?> {
         return repository.buscaPecasRoupa()
