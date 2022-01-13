@@ -1,7 +1,6 @@
 package com.example.lavanderia_cliente.ui.activity
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -51,9 +50,7 @@ class MainActivity : AppCompatActivity() {
             })
 
         }
-
         gerenciadorBottomNavigation()
-
     }
 
     private fun vizualizacaoAppBar(temComponentes: ComponetesVisuais) {

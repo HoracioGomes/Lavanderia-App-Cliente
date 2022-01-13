@@ -160,7 +160,7 @@ class ListaPecaRoupaFragment : BaseFragment(), NavigationView.OnNavigationItemSe
 
             viewModelPecasRoupa.trocaPosicoes(pecasRoupaParaEdicao)
                 .observe(viewLifecycleOwner, androidx.lifecycle.Observer {
-                    if (it.dados ?: 0 > 0 && it.erro == null) {
+                    if (it.dados ?: 0 > 1 && it.erro == null) {
                         adapter?.notifyDataSetChanged()
                     } else {
                         it.erro?.let { it1 -> ToastUtils().showCenterToastShort(context, it1) }
